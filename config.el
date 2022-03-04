@@ -52,3 +52,41 @@
 ;;
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
+
+
+(set-selection-coding-system
+    (if (eq system-type 'windows-nt)
+        'utf-16-le  ;; https://rufflewind.com/2014-07-20/pasting-unicode-in-emacs-on-windows
+      'utf-8))
+
+(after! org
+  (progn
+    ;; org-capture-templates
+    (setq org-capture-templates
+          '(("t" "Todo" entry (file+headline "~/Documents/TODO/gtd.org" "Tasks")
+             "* TODO %?\n  %i" :prepend t)
+
+            ("j" "Journal" entry (file+datetree "~/Documents/notes/src/notes/journal.org" "Journal")
+             "* %?\nEntered on %U\n %i\n %a" :prepend t :empty-lines 1)
+
+            ("w" "WorkNote" entry (file+headline "~/Documents/notes/src/notes/worknotes.org" "WorkNotes")
+             "* %U %?\n\n  %i" :prepend t :empty-lines 1)
+
+            ("l" "LifeNote" entry (file+headline "~/Documents/notes/src/notes/liftnotes.org" "LiftNotes")
+             "* %U %?\n\n  %i" :prepend t :empty-lines 1)
+
+            ("s" "StudyNote" entry (file+headline "~/Documents/notes/src/notes/studynotes.org" "StudyNotes")
+             "* %U %?\n\n  %i" :prepend t :empty-lines 1)
+            ))
+
+    (setq org-agenda-files (list  "~/Documents/TODO/gtd.org"
+                                  "~/Documents/notes/src/notes/liftnotes.org"
+                                  "~/Documents/notes/src/notes/journal.org"
+                                  "~/Documents/notes/src/notes/worknotes.org"
+                                  "~/Documents/notes/src/notes/studynotes.org")))
+
+  (setq org-todo-keywords
+        (quote ((sequence "TODO(t)" "STARTED(s)" "|" "DONE(d!/!)")
+                (sequence "WAITING(w@/!)" "SOMEDAY(S)" "PROJECT(P@)" "|" "CANCELLED(c@/!)"))))
+
+  )
