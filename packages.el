@@ -48,3 +48,8 @@
 ;(unpin! pinned-package another-pinned-package)
 ;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
 ;(unpin! t)
+
+(when (package! eaf :recipe (:host github
+                             :repo "manateelazycat/emacs-application-framework"
+                             :files ("*.el" "*.py" "app" "core")
+                             :build (:not compile))))
