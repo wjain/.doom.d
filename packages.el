@@ -53,3 +53,7 @@
                              :repo "manateelazycat/emacs-application-framework"
                              :files ("*")
                              :build (:not compile))))
+
+(package! doom-snippets  :recipe (:host github
+                                        :repo "hlissner/doom-snippets"
+                                        :files ("*.el" "*")))
