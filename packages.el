@@ -57,3 +57,7 @@
 (package! doom-snippets  :recipe (:host github
                                         :repo "hlissner/doom-snippets"
                                         :files ("*.el" "*")))
+
+(package! lsp-bridge  :recipe (:host github
+                               :repo "manateelazycat/lsp-bridge"
+                               :files ("*.el" "*")))
