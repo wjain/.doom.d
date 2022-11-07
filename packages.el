@@ -62,4 +62,6 @@
                                :repo "manateelazycat/lsp-bridge"
                                :files ("*.el" "*")))
 
+(package! edit-server)
+
 (package! org-roam-ui)

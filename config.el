@@ -43,11 +43,6 @@
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
 (setq display-line-numbers-type t)
 
-;; If you use `org' and don't want your org files in the default location below,
-;; change `org-directory'. It must be set before org loads!
-(setq org-directory "~/Documents/org/")
-
-
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
 ;;
@@ -104,18 +99,31 @@
 
             ("s" "StudyNote" entry (file+headline "~/Documents/notes/src/notes/studynotes.org" "StudyNotes")
              "* %U %?\n\n  %i" :prepend t :empty-lines 1)
-            ))
+
+            ("p" "Protocol" entry (file+headline "~/Documents/notes/src/notes/webnotes.org" "Inbox")
+            "* %^{Title}\nSource: %u, %c\n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?")
+
+            ("L" "Protocol Link" entry (file+headline "~/Documents/notes/src/notes/webnotes.org" "Inbox")
+             "* %? [[%:link][%:description]] \nCaptured On: %U")))
 
     (setq org-agenda-files (list  "~/Documents/TODO/gtd.org"
                                   "~/Documents/notes/src/notes/liftnotes.org"
                                   "~/Documents/notes/src/notes/journal.org"
                                   "~/Documents/notes/src/notes/worknotes.org"
-                                  "~/Documents/notes/src/notes/studynotes.org")))
+                                  "~/Documents/notes/src/notes/studynotes.org"))
 
-  (setq org-todo-keywords
-        (quote ((sequence "TODO(t)" "STARTED(s)" "|" "DONE(d!/!)")
-                (sequence "WAITING(w@/!)" "SOMEDAY(S)" "PROJECT(P@)" "|" "CANCELLED(c@/!)"))))
+    (setq org-todo-keywords
+          (quote ((sequence "TODO(t)" "STARTED(s)" "|" "DONE(d!/!)")
+                  (sequence "WAITING(w@/!)" "SOMEDAY(S)" "PROJECT(P@)" "|" "CANCELLED(c@/!)"))))
+
+    (setq org-roam-capture-ref-templates '(("l" "web" plain "%i\n%?"
+                                            :target (file+head "%<%Y%m%d>-${slug}.org"
+                                                               "#+title: ${title}")
+                                            :unnarrowed t)))
+    )
   )
+
+
 
 (use-package! websocket
     :after org-roam)
