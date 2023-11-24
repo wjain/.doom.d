@@ -74,6 +74,13 @@
 ;;
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
+(setq lsp-java-vmargs
+      (list
+         "-noverify"
+         "-Xmx1G"
+         "-XX:+UseG1GC"
+         "-XX:+UseStringDeduplication"
+         "-javaagent:E:/msys64/home/jain.y/.doom.d/plugin/lombok-1.18.22.jar"))
 
 
 (set-selection-coding-system
