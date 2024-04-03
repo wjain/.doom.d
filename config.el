@@ -76,17 +76,17 @@
 ;; they are implemented.
 (setq lsp-java-vmargs
       (list
-         "-noverify"
-         "-Xmx1G"
-         "-XX:+UseG1GC"
-         "-XX:+UseStringDeduplication"
-         "-javaagent:E:/msys64/home/jain.y/.doom.d/plugin/lombok-1.18.22.jar"))
+       "-noverify"
+       "-Xmx1G"
+       "-XX:+UseG1GC"
+       "-XX:+UseStringDeduplication"
+       "-javaagent:E:/msys64/home/jain.y/.doom.d/plugin/lombok-1.18.22.jar"))
 
 
 (set-selection-coding-system
-    (if (eq system-type 'windows-nt)
-        'utf-16-le  ;; https://rufflewind.com/2014-07-20/pasting-unicode-in-emacs-on-windows
-      'utf-8))
+ (if (eq system-type 'windows-nt)
+     'utf-16-le  ;; https://rufflewind.com/2014-07-20/pasting-unicode-in-emacs-on-windows
+   'utf-8))
 
 (after! org
   (progn
@@ -108,7 +108,7 @@
              "* %U %?\n\n  %i" :prepend t :empty-lines 1)
 
             ("p" "Protocol" entry (file+headline "~/Documents/notes/src/notes/webnotes.org" "Inbox")
-            "* %^{Title}\nSource: %u, %c\n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?")
+             "* %^{Title}\nSource: %u, %c\n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?")
 
             ("L" "Protocol Link" entry (file+headline "~/Documents/notes/src/notes/webnotes.org" "Inbox")
              "* %? [[%:link][%:description]] \nCaptured On: %U")))
@@ -133,16 +133,28 @@
 
 
 (use-package! websocket
-    :after org-roam)
+  :after org-roam)
 
 (use-package! org-roam-ui
-    :after org-roam ;; or :after org
-;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
-;;         a hookable mode anymore, you're advised to pick something yourself
-;;         if you don't care about startup time, use
-;;  :hook (after-init . org-roam-ui-mode)
-    :config
-    (setq org-roam-ui-sync-theme t
-          org-roam-ui-follow t
-          org-roam-ui-update-on-save t
-          org-roam-ui-open-on-start t))
+  :after org-roam ;; or :after org
+  ;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+  ;;         a hookable mode anymore, you're advised to pick something yourself
+  ;;         if you don't care about startup time, use
+  ;;  :hook (after-init . org-roam-ui-mode)
+  :config
+  (setq org-roam-ui-sync-theme t
+        org-roam-ui-follow t
+        org-roam-ui-update-on-save t
+        org-roam-ui-open-on-start t))
+
+(use-package gptel
+  :config
+  (setq gptel-model "moonshot-v1-8k")
+  (setq gptel-default-mode 'org-mode)
+  (setq gptel-backend
+        (gptel-make-openai "Moonshot"
+          :key 'gptel-api-key
+          :models '("moonshot-v1-8k"
+                    "moonshot-v1-32k"
+                    "moonshot-v1-128k")
+          :host "api.moonshot.cn")))
