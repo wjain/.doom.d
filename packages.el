@@ -51,8 +51,13 @@
 
 (when (package! eaf :recipe (:host github
                              :repo "manateelazycat/emacs-application-framework"
-                             :files ("*")
-                             :build (:not compile))))
+                             :files ("*.el" "*.py" "app" "core")
+                             :build (:not compile)))
+
+  (package! all-the-icons)
+  (package! ctable :recipe (:host github :repo "kiwanami/emacs-ctable"))
+  (package! deferred :recipe (:host github :repo "kiwanami/emacs-deferred"))
+  (package! epc :recipe (:host github :repo "kiwanami/emacs-epc")))
 
 (package! doom-snippets  :recipe (:host github
                                   :repo "hlissner/doom-snippets"
@@ -67,3 +72,4 @@
 (package! org-roam-ui)
 
 (package! gptel)
+

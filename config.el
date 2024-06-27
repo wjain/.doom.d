@@ -147,7 +147,7 @@
         org-roam-ui-update-on-save t
         org-roam-ui-open-on-start t))
 
-(use-package gptel
+(use-package! gptel
   :config
   (setq gptel-model "moonshot-v1-8k")
   (setq gptel-default-mode 'org-mode)
@@ -158,3 +158,38 @@
                     "moonshot-v1-32k"
                     "moonshot-v1-128k")
           :host "api.moonshot.cn")))
+
+(use-package! eaf
+  :commands (eaf-open-browser eaf-open find-file)  :init
+  :custom
+  (eaf-browser-continue-where-left-off t)
+  (eaf-browser-enable-adblocker t)
+  (browse-url-browser-function 'eaf-open-browser)
+  :config
+  (use-package! ctable)
+  (use-package! deferred)
+  (use-package! epc)(require 'eaf-file-manager)
+
+  (require 'eaf-jupyter)
+  (require 'eaf-git)
+  (require 'eaf-markdown-previewer)
+  (require 'eaf-terminal)
+  (require 'eaf-pdf-viewer)
+  (require 'eaf-mindmap)
+  (require 'eaf-org-previewer)
+  (require 'eaf-browser)
+  (require 'eaf-file-manager)
+  (when (display-graphic-p)
+    (require 'eaf-all-the-icons))
+
+  (define-key key-translation-map (kbd "SPC")
+              (lambda (prompt)
+                (if (derived-mode-p 'eaf-mode)
+                    (pcase eaf--buffer-app-name
+                      ("browser" (if  (string= (eaf-call-sync "call_function" eaf--buffer-id "is_focus") "True")
+                                     (kbd "SPC")
+                                   (kbd eaf-evil-leader-key)))
+                      ("pdf-viewer" (kbd eaf-evil-leader-key))
+                      ("image-viewer" (kbd eaf-evil-leader-key))
+                      (_  (kbd "SPC")))
+                  (kbd "SPC")))))
