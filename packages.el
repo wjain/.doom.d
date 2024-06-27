@@ -51,7 +51,7 @@
 
 (when (package! eaf :recipe (:host github
                              :repo "manateelazycat/emacs-application-framework"
-                             :files ("*.el" "*.py" "app" "core")
+                             :files ("*")
                              :build (:not compile)))
 
   (package! all-the-icons)
