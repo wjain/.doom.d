@@ -211,10 +211,10 @@
               :font "Fira Code-18"
               :internal-border-width 10))
   (setq evil-insert-state-message nil)   ;; 在 evil 下进入编辑模式不显示  -- INSERT -- 否第一个打的字将不能正确显示在minibuffer
-  (when (or *is-linux* *is-mac*)
+  (when (or IS-LINUX IS-MAC)
     (setq rime-user-data-dir "~/.doom.d/rime")   ;; RIME 的个人输入法方案的配置文件
     (setq rime-librime-root "~/.config/emacs/librime/dist"))
-  (when *is-windows*
+  (when IS-WINDOWS
     (setq rime-user-data-dir "~/.doom.d/rime")   ;; RIME 的个人输入法方案的配置文件
     (cond ((file-exists-p "E:\\msys64\\mingw64\\share\\rime-data")
            (setq rime-share-data-dir "E:\\msys64\\mingw64\\share\\rime-data"))  ;; 这个一定要指定对 不然不能把 rime-user-data-dir 配置的输入法成功编译
