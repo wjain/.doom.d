@@ -73,3 +73,5 @@
 
 (package! gptel)
 
+(package! rime)
+
