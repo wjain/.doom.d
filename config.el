@@ -192,3 +192,79 @@
                       ("image-viewer" (kbd eaf-evil-leader-key))
                       (_  (kbd "SPC")))
                   (kbd "SPC")))))
+
+(use-package! rime
+  :config
+  (setq default-input-method "rime")
+  ;; (setq rime-show-candidate 'posframe)   ;; 使用 posfarme 显示
+  (setq rime-show-candidate 'minibuffer) ;; 使用minibuffer 显示 体验最好 不卡
+  ;; (setq rime-show-candidate 'popup) ;; 使用popup 显示  卡爆了
+  ;; (setq rime-show-candidate 'message)  ;; 使用 message 显示  体验不好  有Bug 上屏不会马上显示
+  (set-face-attribute 'rime-default-face       nil :foreground "#d830f2" :background "#f1f1f1") ;; 候选字的样式
+  (set-face-attribute 'rime-code-face       nil :foreground "#1bd672" :background "#f1f1f1") ;;  输入的编码的样式
+  (set-face-attribute 'rime-candidate-num-face       nil :foreground "#565656" :background "#f1f1f1") ;; 候选序号样式
+  (set-face-attribute 'rime-comment-face       nil :foreground "#565656" :background "#f1f1f1") ;; 编码提示颜色
+
+  (setq rime-posframe-properties
+        (list :background-color "#333333"
+              :foreground-color "#dcdccc"
+              :font "Fira Code-18"
+              :internal-border-width 10))
+  (setq evil-insert-state-message nil)   ;; 在 evil 下进入编辑模式不显示  -- INSERT -- 否第一个打的字将不能正确显示在minibuffer
+  (when (or *is-linux* *is-mac*)
+    (setq rime-user-data-dir "~/.doom.d/rime")   ;; RIME 的个人输入法方案的配置文件
+    (setq rime-librime-root "~/.config/emacs/librime/dist"))
+  (when *is-windows*
+    (setq rime-user-data-dir "~/.doom.d/rime")   ;; RIME 的个人输入法方案的配置文件
+    (cond ((file-exists-p "E:\\msys64\\mingw64\\share\\rime-data")
+           (setq rime-share-data-dir "E:\\msys64\\mingw64\\share\\rime-data"))  ;; 这个一定要指定对 不然不能把 rime-user-data-dir 配置的输入法成功编译
+          ))  ;; 这个一定要指定对 不然不能把 rime-user-data-dir 配置的输入法成功编译
+
+  (setq flycheck-check-syntax-automatically '(mode-enabled save))  ;; 配置flycheck 仅在模式使能和保存的时候进行check
+  (defun my-set-rime-idle-flag ()
+    ;; (message "rime idle")
+    (setq my-rime-idle-p t))
+  (advice-add #'rime--escape :after #'my-set-rime-idle-flag)
+
+  (defun my/org-in-src-block-p()
+    (interactive)
+    (let* (first-search-result (in-src-block-flag nil) (cur-point (point)))
+      (save-excursion
+        (end-of-line)
+        ;; #+begin_src verilog
+        ;; #+end_src
+        (when (re-search-backward "\\(#\\+begin_src\\|#\\+BEGIN_SRC\\|#\\+end_src\\|#\\+END_SRC\\)" nil t)
+          (setq first-search-result (match-string 1))
+          (unless (or (string= first-search-result "#+end_src") (string= first-search-result "#+END_SRC"))
+            ;; 前面有 begin_src 如果后面有 end_src 则在 src_block 中
+            (goto-char cur-point)
+            (if (re-search-forward "\\(#\\+begin_src\\|#\\+BEGIN_SRC\\|#\\+end_src\\|#\\+END_SRC\\)" nil t)
+                (progn
+                  (setq first-search-result (match-string 1))
+                  ;; (message " first-search-result : %s" first-search-result)
+                  (unless (or (string= first-search-result "#+begin_src") (string= first-search-result "#+BEGIN_SRC"))
+                    ;; 往后找找到end_src , 符合预期 认为在src_block 里
+                    ;; (message "in src block")
+                    (setq in-src-block-flag t)
+                    ))))))
+      in-src-block-flag))
+  
+  (defun my/rime-predicate-org-in-src-block-p ()
+    "Whether point is in an org-mode's code source block."
+    (and (derived-mode-p 'org-mode)
+         (my/org-in-src-block-p)))
+
+  (setq rime-disable-predicates
+        '(rime-predicate-evil-mode-p ;; evil 模式的非编辑模式下使用英文
+          rime-predicate-after-alphabet-char-p ;; 在英文字符串之后（必须为以字母开头的英文字符串）
+          rime-predicate-after-ascii-char-p    ;; 任意英文字符后
+          rime-predicate-current-input-punctuation-p ;; 当要输入的是符号时
+          ;; rime-predicate-org-in-src-block-p          ;; 当在 org mode 里的代码块时 有BUG
+          my/rime-predicate-org-in-src-block-p       ;; 当在 org mode 里的代码块时 时用英文 修复了原始的 rime-predicate-org-in-src-block-p 识别错误的BUG
+          rime-predicate-current-uppercase-letter-p ;; 将要输入的为大写字母时
+          rime-predicate-punctuation-line-begin-p   ;; 行首要输入符号时
+          rime-predicate-hydra-p                    ;; 如果激活了一个 hydra keymap
+          ;; rime-predicate-punctuation-after-space-cc-p ;; 当要在中文字符且有空格之后输入符号时
+          rime-predicate-tex-math-or-command-p        ;; 在 (La)TeX 数学环境中或者输入 (La)TeX 命令时
+          rime-predicate-in-code-string-p           ;; 在代码的字符串中，不含注释的字符串
+          rime-predicate-prog-in-code-p))) ;; 在 prog-mode 和 conf-mode 中除了注释和引号内字符串之外的区域
