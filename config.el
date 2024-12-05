@@ -268,3 +268,8 @@
           rime-predicate-tex-math-or-command-p        ;; 在 (La)TeX 数学环境中或者输入 (La)TeX 命令时
           rime-predicate-in-code-string-p           ;; 在代码的字符串中，不含注释的字符串
           rime-predicate-prog-in-code-p))) ;; 在 prog-mode 和 conf-mode 中除了注释和引号内字符串之外的区域
+
+
+(use-package! impatient-mode
+  :after web-mode
+  )

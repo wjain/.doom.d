@@ -75,3 +75,4 @@
 
 (package! rime)
 
+(package! impatient-mode)
