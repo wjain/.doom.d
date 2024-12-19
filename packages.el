@@ -76,3 +76,5 @@
 (package! rime)
 
 (package! impatient-mode)
+
+(package! copilot)
