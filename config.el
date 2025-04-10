@@ -15,7 +15,7 @@
 ;; - `doom-variable-pitch-font' -- a non-monospace font (where applicable)
 ;; - `doom-big-font' -- used for `doom-big-font-mode'; use this for
 ;;   presentations or streaming.
-;; - `doom-unicode-font' -- for unicode glyphs
+;; - `doom-symbol-font' -- for symbols
 ;; - `doom-serif-font' -- for the `fixed-pitch-serif' face
 ;;
 ;; See 'C-h v doom-font' for documentation and more examples of what they
@@ -34,14 +34,14 @@
 ;; `load-theme' function. This is the default:
 (setq doom-theme 'doom-one)
 
+;; This determines the style of line numbers in effect. If set to `nil', line
+;; numbers are disabled. For relative line numbers, set this to `relative'.
+(setq display-line-numbers-type t)
+
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
 (setq org-directory "~/Documents/org/")
 (setq org-roam-directory "~/org-roam")
-
-;; This determines the style of line numbers in effect. If set to `nil', line
-;; numbers are disabled. For relative line numbers, set this to `relative'.
-(setq display-line-numbers-type t)
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
@@ -126,11 +126,13 @@
     (setq org-roam-capture-ref-templates '(("l" "web" plain "%i\n%?"
                                             :target (file+head "%<%Y%m%d>-${slug}.org"
                                                                "#+title: ${title}")
+                                            :unnarrowed t)
+                                           ("r" "ref" plain "%i\n%?"
+                                            :target (file+head "%<%Y%m%d>-${slug}.org"
+                                                               "#+title: ${title}\n\n${body}")
                                             :unnarrowed t)))
     )
   )
-
-
 
 (use-package! websocket
   :after org-roam)
@@ -248,7 +250,7 @@
                     (setq in-src-block-flag t)
                     ))))))
       in-src-block-flag))
-  
+
   (defun my/rime-predicate-org-in-src-block-p ()
     "Whether point is in an org-mode's code source block."
     (and (derived-mode-p 'org-mode)
