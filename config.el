@@ -126,11 +126,13 @@
     (setq org-roam-capture-ref-templates '(("l" "web" plain "%i\n%?"
                                             :target (file+head "%<%Y%m%d>-${slug}.org"
                                                                "#+title: ${title}")
+                                            :unnarrowed t)
+                                           ("r" "ref" plain "%i\n%?"
+                                            :target (file+head "%<%Y%m%d>-${slug}.org"
+                                                               "#+title: ${title}\n\n${body}")
                                             :unnarrowed t)))
     )
   )
-
-
 
 (use-package! websocket
   :after org-roam)
@@ -248,7 +250,7 @@
                     (setq in-src-block-flag t)
                     ))))))
       in-src-block-flag))
-  
+
   (defun my/rime-predicate-org-in-src-block-p ()
     "Whether point is in an org-mode's code source block."
     (and (derived-mode-p 'org-mode)
