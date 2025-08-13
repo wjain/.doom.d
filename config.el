@@ -166,13 +166,13 @@
   :custom
   (eaf-browser-continue-where-left-off t)
   (eaf-browser-enable-adblocker t)
-  (browse-url-browser-function 'eaf-open-browser)
+  ;; (browse-url-browser-function 'eaf-open-browser)
   :config
   (use-package! ctable)
   (use-package! deferred)
   (use-package! epc)(require 'eaf-file-manager)
 
-  (require 'eaf-browser)
+  ;; (require 'eaf-browser)
   ;;(require 'eaf-git)
   ;;(require 'eaf-markdown-previewer)
   ;;(require 'eaf-terminal)
