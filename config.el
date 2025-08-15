@@ -120,10 +120,10 @@
                                   "~/Documents/notes/src/notes/studynotes.org"))
 
     (setq org-todo-keywords
-          (quote ((sequence "TODO(t)" "STARTED(s)" "|" "DONE(d!/!)")
-                  (sequence "WAITING(w@/!)" "SOMEDAY(S)" "PROJECT(P@)" "|" "CANCELLED(c@/!)"))))
+          '( (sequence "TODO(t)" "STARTED(s)" "|" "DONE(d!/!)")
+             (sequence "WAITING(w@/!)" "SOMEDAY(S)" "PROJECT(P@)" "|" "CANCELLED(c@!)"))))
 
-    (setq org-roam-capture-ref-templates '(("l" "web" plain "%i\n%?"
+    (setq org-roam-capture-ref-templates '( ("l" "web" plain "%i\n%?"
                                             :target (file+head "%<%Y%m%d>-${slug}.org"
                                                                "#+title: ${title}")
                                             :unnarrowed t)
@@ -193,7 +193,7 @@
                       ("pdf-viewer" (kbd eaf-evil-leader-key))
                       ("image-viewer" (kbd eaf-evil-leader-key))
                       (_  (kbd "SPC")))
-                  (kbd "SPC")))))
+                  (kbd "SPC"))))
 
 (use-package! rime
   :config
@@ -284,3 +284,57 @@
               ("TAB" . 'copilot-accept-completion)
               ("C-TAB" . 'copilot-accept-completion-by-word)
               ("C-<tab>" . 'copilot-accept-completion-by-word)))
+
+(use-package aidermacs
+  :bind (("C-c a" . aidermacs-transient-menu))
+  :config
+  ; Set API_KEY in .bashrc, that will automatically picked up by aider or in elisp
+  (setenv "ANTHROPIC_API_KEY" "sk-...")
+  ; defun my-get-openrouter-api-key yourself elsewhere for security reasons
+  (setenv "OPENROUTER_API_KEY" (my-get-openrouter-api-key))
+  :custom
+  ; See the Configuration section below
+  (aidermacs-default-chat-mode 'architect)
+  (aidermacs-default-model "sonnet"))
+
+(use-package! eat
+  :config
+  (setq eat-term-name "cmd.exe") ;; Or "powershell.exe" or "bash.exe" if you have Git Bash/WSL
+  (setq eat-term-args nil)
+  (setq eat-term-initial-dir default-directory)
+  (setq eat-term-prompt-regexp "^[^#$"%># ]*[#$%>] *")
+  (setq eat-term-kill-buffer-on-exit t)
+  (setq eat-term-display-buffer-action '((display-buffer-reuse-window display-buffer-at-bottom))
+  (setq eat-term-display-buffer-height 0.3)
+  (setq eat-term-display-buffer-width 1.0)
+
+  (setq explicit-shell-file-name eat-term-name)
+  (setq explicit-bash-args eat-term-args)
+
+  (setq term-buffer-name-format "*eat-%s*")
+
+  (map! :leader
+        :prefix "t"
+        :desc "Open eat terminal" "e" #'eat-term)
+
+  (add-hook 'eat-term-mode-hook #'(lambda ()
+                                    (setq-local evil-insert-state-cursor (list nil "red"))
+                                    (setq-local evil-normal-state-cursor (list nil "blue"))
+                                    (setq-local evil-visual-state-cursor (list nil "purple"))
+                                    (setq-local evil-replace-state-cursor (list nil "orange"))
+                                    (setq-local evil-emacs-state-cursor (list nil "green"))
+                                    (setq-local evil-motion-state-cursor (list nil "yellow"))
+                                    (setq-local evil-operator-state-cursor (list nil "cyan"))
+                                    (setq-local evil-hybrid-state-cursor (list nil "magenta"))
+                                    (setq-local evil-undo-state-cursor (list nil "brown"))
+                                    (setq-local evil-redo-state-cursor (list nil "gray"))
+                                    (setq-local evil-insert-state-message nil)
+                                    (setq-local evil-normal-state-message nil)
+                                    (setq-local evil-visual-state-message nil)
+                                    (setq-local evil-replace-state-message nil)
+                                    (setq-local evil-emacs-state-message nil)
+                                    (setq-local evil-motion-state-message nil)
+                                    (setq-local evil-operator-state-message nil)
+                                    (setq-local evil-hybrid-state-message nil)
+                                    (setq-local evil-undo-state-message nil)
+                                    (setq-local evil-redo-state-message nil))))
