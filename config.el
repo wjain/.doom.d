@@ -290,7 +290,7 @@
   ;; (setenv "ANTHROPIC_API_KEY" "sk-...")
   ;; defun my-get-openrouter-api-key yourself elsewhere for security reasons
   ;; (setenv "OPENROUTER_API_KEY" (my-get-openrouter-api-key))
-  (setenv "OLLAMA_API_BASE" "http://192.168.5.241:11434")
+  ;; (setenv "OLLAMA_API_BASE" "http://192.168.5.241:11434")
   :custom
   ;; See the Configuration section below
   (aidermacs-default-chat-mode 'architect)
