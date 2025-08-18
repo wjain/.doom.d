@@ -123,14 +123,14 @@
           '( (sequence "TODO(t)" "STARTED(s)" "|" "DONE(d!/!)")
              (sequence "WAITING(w@/!)" "SOMEDAY(S)" "PROJECT(P@)" "|" "CANCELLED(c@!)"))))
 
-    (setq org-roam-capture-ref-templates '( ("l" "web" plain "%i\n%?"
-                                            :target (file+head "%<%Y%m%d>-${slug}.org"
-                                                               "#+title: ${title}")
-                                            :unnarrowed t)
-                                           ("r" "ref" plain "%i\n%?"
-                                            :target (file+head "%<%Y%m%d>-${slug}.org"
-                                                               "#+title: ${title}\n\n${body}")
-                                            :unnarrowed t))))
+  (setq org-roam-capture-ref-templates '( ("l" "web" plain "%i\n%?"
+                                           :target (file+head "%<%Y%m%d>-${slug}.org"
+                                                              "#+title: ${title}")
+                                           :unnarrowed t)
+                                          ("r" "ref" plain "%i\n%?"
+                                           :target (file+head "%<%Y%m%d>-${slug}.org"
+                                                              "#+title: ${title}\n\n${body}")
+                                           :unnarrowed t))))
 
 (use-package! websocket
   :after org-roam)
@@ -275,34 +275,36 @@
   )
 
 
-(use-package! copilot
-  :hook (prog-mode . copilot-mode)
-  :bind (:map copilot-completion-map
-              ("<tab>" . 'copilot-accept-completion)
-              ("TAB" . 'copilot-accept-completion)
-              ("C-TAB" . 'copilot-accept-completion-by-word)
-              ("C-<tab>" . 'copilot-accept-completion-by-word)))
+;; (use-package! copilot
+;;   :hook (prog-mode . copilot-mode)
+;;   :bind (:map copilot-completion-map
+;;               ("<tab>" . 'copilot-accept-completion)
+;;               ("TAB" . 'copilot-accept-completion)
+;;               ("C-TAB" . 'copilot-accept-completion-by-word)
+;;               ("C-<tab>" . 'copilot-accept-completion-by-word)))
 
 (use-package aidermacs
   :bind (("C-c a" . aidermacs-transient-menu))
   :config
-  ; Set API_KEY in .bashrc, that will automatically picked up by aider or in elisp
-  (setenv "ANTHROPIC_API_KEY" "sk-...")
-  ; defun my-get-openrouter-api-key yourself elsewhere for security reasons
-  (setenv "OPENROUTER_API_KEY" (my-get-openrouter-api-key))
+  ;; Set API_KEY in .bashrc, that will automatically picked up by aider or in elisp
+  ;; (setenv "ANTHROPIC_API_KEY" "sk-...")
+  ;; defun my-get-openrouter-api-key yourself elsewhere for security reasons
+  ;; (setenv "OPENROUTER_API_KEY" (my-get-openrouter-api-key))
+  (setenv "OLLAMA_API_BASE" "http://192.168.5.241:11434")
   :custom
-  ; See the Configuration section below
+  ;; See the Configuration section below
   (aidermacs-default-chat-mode 'architect)
-  (aidermacs-default-model "sonnet"))
+  (aidermacs-default-model "ollama/qwen3:32b")
+  (aidermacs-editor-model "ollama/qwen3-coder:30b"))
 
 (use-package! eat
   :config
   (setq eat-term-name "cmdproxy.exe") ;; Or "powershell.exe" or "bash.exe" if you have Git Bash/WSL
   (setq eat-term-args nil)
   (setq eat-term-initial-dir default-directory)
-;;  (setq eat-term-prompt-regexp "^[^#$"%># ]*[#$%>] *")
-;;  (setq eat-term-kill-buffer-on-exit t)
-;;  (setq eat-term-display-buffer-action '((display-buffer-reuse-window display-buffer-at-bottom))
+  ;;  (setq eat-term-prompt-regexp "^[^#$"%># ]*[#$%>] *")
+  ;;  (setq eat-term-kill-buffer-on-exit t)
+  ;;  (setq eat-term-display-buffer-action '((display-buffer-reuse-window display-buffer-at-bottom))
   (setq eat-term-display-buffer-height 0.3)
   (setq eat-term-display-buffer-width 1.0)
 
