@@ -130,9 +130,7 @@
                                            ("r" "ref" plain "%i\n%?"
                                             :target (file+head "%<%Y%m%d>-${slug}.org"
                                                                "#+title: ${title}\n\n${body}")
-                                            :unnarrowed t)))
-    )
-  )
+                                            :unnarrowed t))))
 
 (use-package! websocket
   :after org-roam)
@@ -149,51 +147,51 @@
         org-roam-ui-update-on-save t
         org-roam-ui-open-on-start t))
 
-(use-package! gptel
-  :config
-  (setq gptel-model "moonshot-v1-8k")
-  (setq gptel-default-mode 'org-mode)
-  (setq gptel-backend
-        (gptel-make-openai "Moonshot"
-          :key 'gptel-api-key
-          :models '("moonshot-v1-8k"
-                    "moonshot-v1-32k"
-                    "moonshot-v1-128k")
-          :host "api.moonshot.cn")))
+;; (use-package! gptel
+;;   :config
+;;   (setq gptel-model "moonshot-v1-8k")
+;;   (setq gptel-default-mode 'org-mode)
+;;   (setq gptel-backend
+;;         (gptel-make-openai "Moonshot"
+;;           :key 'gptel-api-key
+;;           :models '("moonshot-v1-8k"
+;;                     "moonshot-v1-32k"
+;;                     "moonshot-v1-128k")
+;;           :host "api.moonshot.cn")))
 
-(use-package! eaf
-  :commands (eaf-open-browser eaf-open find-file)  :init
-  :custom
-  (eaf-browser-continue-where-left-off t)
-  (eaf-browser-enable-adblocker t)
-  ;; (browse-url-browser-function 'eaf-open-browser)
-  :config
-  (use-package! ctable)
-  (use-package! deferred)
-  (use-package! epc)(require 'eaf-file-manager)
-
-  ;; (require 'eaf-browser)
-  ;;(require 'eaf-git)
-  ;;(require 'eaf-markdown-previewer)
-  ;;(require 'eaf-terminal)
-  ;;(require 'eaf-pdf-viewer)
-  ;;(require 'eaf-mindmap)
-  ;;(require 'eaf-org-previewer)
-  ;;(require 'eaf-file-manager)
-  (when (display-graphic-p)
-    (require 'eaf-all-the-icons))
-
-  (define-key key-translation-map (kbd "SPC")
-              (lambda (prompt)
-                (if (derived-mode-p 'eaf-mode)
-                    (pcase eaf--buffer-app-name
-                      ("browser" (if  (string= (eaf-call-sync "call_function" eaf--buffer-id "is_focus") "True")
-                                     (kbd "SPC")
-                                   (kbd eaf-evil-leader-key)))
-                      ("pdf-viewer" (kbd eaf-evil-leader-key))
-                      ("image-viewer" (kbd eaf-evil-leader-key))
-                      (_  (kbd "SPC")))
-                  (kbd "SPC"))))
+;; (use-package! eaf
+;;   :commands (eaf-open-browser eaf-open find-file)  :init
+;;   :custom
+;;   (eaf-browser-continue-where-left-off t)
+;;   (eaf-browser-enable-adblocker t)
+;;   ;; (browse-url-browser-function 'eaf-open-browser)
+;;   :config
+;;   (use-package! ctable)
+;;   (use-package! deferred)
+;;   (use-package! epc)(require 'eaf-file-manager)
+;; 
+;;   ;; (require 'eaf-browser)
+;;   ;;(require 'eaf-git)
+;;   ;;(require 'eaf-markdown-previewer)
+;;   ;;(require 'eaf-terminal)
+;;   ;;(require 'eaf-pdf-viewer)
+;;   ;;(require 'eaf-mindmap)
+;;   ;;(require 'eaf-org-previewer)
+;;   ;;(require 'eaf-file-manager)
+;;   (when (display-graphic-p)
+;;     (require 'eaf-all-the-icons))
+;; 
+;;   (define-key key-translation-map (kbd "SPC")
+;;               (lambda (prompt)
+;;                 (if (derived-mode-p 'eaf-mode)
+;;                     (pcase eaf--buffer-app-name
+;;                       ("browser" (if  (string= (eaf-call-sync "call_function" eaf--buffer-id "is_focus") "True")
+;;                                      (kbd "SPC")
+;;                                    (kbd eaf-evil-leader-key)))
+;;                       ("pdf-viewer" (kbd eaf-evil-leader-key))
+;;                       ("image-viewer" (kbd eaf-evil-leader-key))
+;;                       (_  (kbd "SPC")))
+;;                   (kbd "SPC")))))
 
 (use-package! rime
   :config
@@ -299,12 +297,12 @@
 
 (use-package! eat
   :config
-  (setq eat-term-name "cmd.exe") ;; Or "powershell.exe" or "bash.exe" if you have Git Bash/WSL
+  (setq eat-term-name "cmdproxy.exe") ;; Or "powershell.exe" or "bash.exe" if you have Git Bash/WSL
   (setq eat-term-args nil)
   (setq eat-term-initial-dir default-directory)
-  (setq eat-term-prompt-regexp "^[^#$"%># ]*[#$%>] *")
-  (setq eat-term-kill-buffer-on-exit t)
-  (setq eat-term-display-buffer-action '((display-buffer-reuse-window display-buffer-at-bottom))
+;;  (setq eat-term-prompt-regexp "^[^#$"%># ]*[#$%>] *")
+;;  (setq eat-term-kill-buffer-on-exit t)
+;;  (setq eat-term-display-buffer-action '((display-buffer-reuse-window display-buffer-at-bottom))
   (setq eat-term-display-buffer-height 0.3)
   (setq eat-term-display-buffer-width 1.0)
 
