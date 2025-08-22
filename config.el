@@ -294,8 +294,8 @@
   :custom
   ;; See the Configuration section below
   (aidermacs-default-chat-mode 'architect)
-  (aidermacs-default-model "ollama/qwen3:32b")
-  (aidermacs-editor-model "ollama/qwen3-coder:30b"))
+  ;; (aidermacs-default-model "ollama/qwen3:30b-a3b-instruct-2507-q4_K_M")
+  ;; (aidermacs-editor-model "ollama/qwen3-coder:30b"))
 
 (use-package! eat
   :config
