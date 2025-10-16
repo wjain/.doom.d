@@ -321,4 +321,4 @@
 (use-package! vterm
   :config
   (when (eq system-type 'windows-nt)
-    (setq vterm-shell "bash")))
+    (setq vterm-shell ":/msys64/msys2_shell.cmd -defterm -here -no-start -ucrt64 -i")))
