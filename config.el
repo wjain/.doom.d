@@ -147,18 +147,6 @@
         org-roam-ui-update-on-save t
         org-roam-ui-open-on-start t))
 
-;; (use-package! gptel
-;;   :config
-;;   (setq gptel-model "moonshot-v1-8k")
-;;   (setq gptel-default-mode 'org-mode)
-;;   (setq gptel-backend
-;;         (gptel-make-openai "Moonshot"
-;;           :key 'gptel-api-key
-;;           :models '("moonshot-v1-8k"
-;;                     "moonshot-v1-32k"
-;;                     "moonshot-v1-128k")
-;;           :host "api.moonshot.cn")))
-
 ;; (use-package! eaf
 ;;   :commands (eaf-open-browser eaf-open find-file)  :init
 ;;   :custom
@@ -298,44 +286,39 @@
   ;; (aidermacs-editor-model "ollama/qwen3-coder:30b")
   )
 
-(use-package! eat
+;; (use-package! gptel
+;;   :config
+;;   (setq gptel-model "moonshot-v1-8k")
+;;   (setq gptel-default-mode 'org-mode)
+;;   (setq gptel-backend
+;;         (gptel-make-openai "Moonshot"
+;;           :key 'gptel-api-key
+;;           :models '("moonshot-v1-8k"
+;;                     "moonshot-v1-32k"
+;;                     "moonshot-v1-128k")
+;;           :host "api.moonshot.cn")))
+
+;; Superchat 配置
+(use-package! superchat
+  :after gptel
+  :commands (superchat-start superchat-new-chat)  ; 确保命令在加载时可用
   :config
-  (setq eat-term-name "cmdproxy.exe") ;; Or "powershell.exe" or "bash.exe" if you have Git Bash/WSL
-  (setq eat-term-args nil)
-  (setq eat-term-initial-dir default-directory)
-  ;;  (setq eat-term-prompt-regexp "^[^#$"%># ]*[#$%>] *")
-  ;;  (setq eat-term-kill-buffer-on-exit t)
-  ;;  (setq eat-term-display-buffer-action '((display-buffer-reuse-window display-buffer-at-bottom))
-  (setq eat-term-display-buffer-height 0.3)
-  (setq eat-term-display-buffer-width 1.0)
+  (setq superchat-mode "ollama")
+  (setq superchat-default-model "qwen3:32b")
+  (setq superchat-lang "中文")
+  (setq superchat-data-directory "~/Documents/notes/superchat/")
+  (setq superchat-default-directories '("~/Documents/notes"
+                                        (setq superchat-port 8080))
 
-  (setq explicit-shell-file-name eat-term-name)
-  (setq explicit-bash-args eat-term-args)
+        ;; 快捷键绑定
+        (map! :leader
+              :prefix ("x" . "AI")
+              :desc "GPTel chat" "g" #'gptel
+              :desc "Superchat start" "s" #'superchat-start
+              :desc "Switch to Ollama" "o" #'my/gptel-set-ollama
+              :desc "Switch to OpenAI" "p" #'my/gptel-set-openai)))
 
-  (setq term-buffer-name-format "*eat-%s*")
-
-  (map! :leader
-        :prefix "t"
-        :desc "Open eat terminal" "e" #'eat-term)
-
-  (add-hook 'eat-term-mode-hook #'(lambda ()
-                                    (setq-local evil-insert-state-cursor (list nil "red"))
-                                    (setq-local evil-normal-state-cursor (list nil "blue"))
-                                    (setq-local evil-visual-state-cursor (list nil "purple"))
-                                    (setq-local evil-replace-state-cursor (list nil "orange"))
-                                    (setq-local evil-emacs-state-cursor (list nil "green"))
-                                    (setq-local evil-motion-state-cursor (list nil "yellow"))
-                                    (setq-local evil-operator-state-cursor (list nil "cyan"))
-                                    (setq-local evil-hybrid-state-cursor (list nil "magenta"))
-                                    (setq-local evil-undo-state-cursor (list nil "brown"))
-                                    (setq-local evil-redo-state-cursor (list nil "gray"))
-                                    (setq-local evil-insert-state-message nil)
-                                    (setq-local evil-normal-state-message nil)
-                                    (setq-local evil-visual-state-message nil)
-                                    (setq-local evil-replace-state-message nil)
-                                    (setq-local evil-emacs-state-message nil)
-                                    (setq-local evil-motion-state-message nil)
-                                    (setq-local evil-operator-state-message nil)
-                                    (setq-local evil-hybrid-state-message nil)
-                                    (setq-local evil-undo-state-message nil)
-                                    (setq-local evil-redo-state-message nil))))
+(use-package! vterm
+  :config
+  (when (eq system-type 'windows-nt)
+    (setq vterm-shell "bash")))
