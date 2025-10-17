@@ -262,15 +262,6 @@
   :after web-mode
   )
 
-
-;; (use-package! copilot
-;;   :hook (prog-mode . copilot-mode)
-;;   :bind (:map copilot-completion-map
-;;               ("<tab>" . 'copilot-accept-completion)
-;;               ("TAB" . 'copilot-accept-completion)
-;;               ("C-TAB" . 'copilot-accept-completion-by-word)
-;;               ("C-<tab>" . 'copilot-accept-completion-by-word)))
-
 (use-package aidermacs
   :bind (("C-c a" . aidermacs-transient-menu))
   :config
@@ -286,17 +277,48 @@
   ;; (aidermacs-editor-model "ollama/qwen3-coder:30b")
   )
 
-;; (use-package! gptel
-;;   :config
-;;   (setq gptel-model "moonshot-v1-8k")
-;;   (setq gptel-default-mode 'org-mode)
-;;   (setq gptel-backend
-;;         (gptel-make-openai "Moonshot"
-;;           :key 'gptel-api-key
-;;           :models '("moonshot-v1-8k"
-;;                     "moonshot-v1-32k"
-;;                     "moonshot-v1-128k")
-;;           :host "api.moonshot.cn")))
+(use-package! gptel
+  :config
+  (setq gptel-default-mode 'org-mode)
+  ;; Moonshot
+  (setq gptel--backend-moonshot
+        (gptel-make-openai "Moonshot"
+          :host "api.moonshot.cn"
+          :endpoint "/v1/chat/completions"
+          :key 'gptel-api-key-from-auth-source
+          :models '("moonshot-v1-8k"
+                    "moonshot-v1-32k"
+                    "moonshot-v1-128k")))
+  (setq-default gptel-backend gptel--backend-moonshot
+                gptel-model "moonshot-v1-8k")
+
+  ;; ChatGLM
+  (setq gptel--backend-chatglm-token 'gptel-api-key-from-auth-source)
+  (defun gptel--backend-chatglm-header ()
+    (let ((token gptel--backend-chatglm-token))
+      `(("Authorization" .  ,(concat "Bearer " token)))))
+  (setq gptel--backend-chatglm (gptel-make-openai "ChatGLM"
+                                 :host "open.bigmodel.cn"
+                                 :endpoint "/api/paas/v4/chat/completions"
+                                 :models '("glm-4-flash")
+                                 :stream nil
+                                 :header #'gptel--backend-chatglm-header))
+  (setq-default gptel-backend gptel--backend-chatglm
+                gptel-model "glm-4-flash")
+
+  ;; Ollama
+  (setq gptel--backend-ollama
+        (gptel-make-ollama "Ollama"
+          :host "DESKTOP-S8S12TU:11434"
+          :stream t
+          :models '(qwen3:32b
+                    qwen3:30b-a3b-instruct-2507-q4_K_M
+                    qwen3-coder:30b
+                    )))
+  (setq-default gptel-backend gptel--backend-ollama
+                gptel-model "qwen3:32b")
+
+  )
 
 ;; Superchat 配置
 (use-package! superchat
@@ -307,16 +329,42 @@
   (setq superchat-default-model "qwen3:32b")
   (setq superchat-lang "中文")
   (setq superchat-data-directory "~/Documents/notes/superchat/")
-  (setq superchat-default-directories '("~/Documents/notes"
-                                        (setq superchat-port 8080))
+  (setq superchat-default-directories '"~/Documents/notes")
+  (setq superchat-port 8080)
 
-        ;; 快捷键绑定
-        (map! :leader
-              :prefix ("x" . "AI")
-              :desc "GPTel chat" "g" #'gptel
-              :desc "Superchat start" "s" #'superchat-start
-              :desc "Switch to Ollama" "o" #'my/gptel-set-ollama
-              :desc "Switch to OpenAI" "p" #'my/gptel-set-openai)))
+  ;; 定义后端切换函数
+  (defun my/gptel-set-moonshot ()
+    "切换到 ChatGLM 后端"
+    (interactive)
+    (setq gptel-backend "Moonshot")
+    (setq gptel-model "moonshot-v1-8k")
+    (message "Switched to ChatGLM backend"))
+
+  (defun my/gptel-set-chatglm ()
+    "切换到 ChatGLM 后端"
+    (interactive)
+    (setq gptel-backend "ChatGLM")
+    (setq gptel-model "glm-4.5-flash")
+    (message "Switched to ChatGLM backend"))
+
+
+  (defun my/gptel-set-ollama ()
+    "切换到 Ollama 后端"
+    (interactive)
+    (setq gptel-backend "Ollama")
+    (setq gptel-model "qwen3:32b")
+    (message "Switched to Ollama backend"))
+
+
+
+  ;; 快捷键绑定
+  (map! :leader
+        :prefix ("x" . "AI")
+        :desc "Superchat start" "s" #'superchat-start
+        :desc "Switch to Moonshot" "m" #'my/gptel-set-moonshot
+        :desc "Switch to ChatGLM" "o" #'my/gptel-set-chatglm
+        :desc "Switch to Ollama" "o" #'my/gptel-set-ollama
+        :desc "Switch to OpenAI" "p" #'my/gptel-set-openai))
 
 (use-package! vterm
   :config

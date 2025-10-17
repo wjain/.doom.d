@@ -59,12 +59,12 @@
 ;;   (package! epc :recipe (:host github :repo "kiwanami/emacs-epc")))
 
 (package! doom-snippets  :recipe (:host github
-                                  :repo "hlissner/doom-snippets"
-                                  :files ("*.el" "*")))
+                                        :repo "hlissner/doom-snippets"
+                                        :files ("*.el" "*")))
 
 (package! lsp-bridge  :recipe (:host github
-                               :repo "manateelazycat/lsp-bridge"
-                               :files ("*.el" "*")))
+                                     :repo "manateelazycat/lsp-bridge"
+                                     :files ("*.el" "*")))
 
 (package! edit-server)
 
@@ -74,11 +74,7 @@
 
 (package! impatient-mode)
 
-(package! copilot)
-
 (package! aidermacs)
-
-(package! gptel)
 
 (package! superchat
   :recipe (:host github :repo "yibie/superchat"))
