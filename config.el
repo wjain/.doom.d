@@ -311,10 +311,11 @@
         (gptel-make-ollama "Ollama"
           :host "DESKTOP-S8S12TU:11434"
           :stream t
-          :models '(qwen3:32b
-                    qwen3:30b-a3b-instruct-2507-q4_K_M
-                    qwen3-coder:30b
+          :models '("qwen3:32b"
+                    "qwen3:30b-a3b-instruct-2507-q4_K_M"
+                    "qwen3-coder:30b"
                     )))
+
   (setq-default gptel-backend gptel--backend-ollama
                 gptel-model "qwen3:32b")
 
@@ -336,23 +337,23 @@
   (defun my/gptel-set-moonshot ()
     "切换到 ChatGLM 后端"
     (interactive)
-    (setq gptel-backend "Moonshot")
-    (setq gptel-model "moonshot-v1-8k")
-    (message "Switched to ChatGLM backend"))
+    (setq-default gptel-backend gptel--backend-moonshot
+                  gptel-model "moonshot-v1-8k")
+    (message "Switched to Moonshot backend"))
 
   (defun my/gptel-set-chatglm ()
     "切换到 ChatGLM 后端"
     (interactive)
-    (setq gptel-backend "ChatGLM")
-    (setq gptel-model "glm-4.5-flash")
+    (setq-default gptel-backend gptel--backend-chatglm
+                  gptel-model "glm-4.5-flash")
     (message "Switched to ChatGLM backend"))
 
 
   (defun my/gptel-set-ollama ()
     "切换到 Ollama 后端"
     (interactive)
-    (setq gptel-backend "Ollama")
-    (setq gptel-model "qwen3:32b")
+    (setq-default gptel-backend gptel--backend-ollama
+                  gptel-model "qwen3:32b")
     (message "Switched to Ollama backend"))
 
 
@@ -360,7 +361,7 @@
   ;; 快捷键绑定
   (map! :leader
         :prefix ("x" . "AI")
-        :desc "Superchat start" "s" #'superchat-start
+        :desc "Superchat start" "s" #'superchat
         :desc "Switch to Moonshot" "m" #'my/gptel-set-moonshot
         :desc "Switch to ChatGLM" "o" #'my/gptel-set-chatglm
         :desc "Switch to Ollama" "o" #'my/gptel-set-ollama
