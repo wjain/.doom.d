@@ -370,4 +370,5 @@
 (use-package! vterm
   :config
   (when (eq system-type 'windows-nt)
-    (setq vterm-shell "E:/msys64/msys2_shell.cmd -defterm -here -no-start -mingw64 -i")))
+    (setq vterm-shell "E:/msys64/msys2_shell.cmd -defterm -here -no-start -mingw64 -i")
+    (setq vterm-conpty-proxy-path "~/.doom.d/bin/conpty_proxy.exe")))

@@ -76,5 +76,20 @@
 
 (package! aidermacs)
 
+(package! vterm
+  :recipe (
+	 :host github
+	 :repo "xhcoding/emacs-libvterm"
+	 :files ("CMakeLists.txt"
+			 "elisp.c"
+			 "elisp.h"
+			 "emacs-module.h"
+			 "etc"
+			 "utf8.c"
+			 "utf8.h"
+			 "vterm.el"
+			 "vterm-module.c"
+			 "vterm-module.h")))
+
 (package! superchat
   :recipe (:host github :repo "yibie/superchat"))
