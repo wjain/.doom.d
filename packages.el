@@ -72,8 +72,20 @@
 
 (package! rime)
 
-(package! web-server)
-(package! simple-httpd)
+(package! web-server
+  :recipe (
+           :host github
+           :repo "eschulte/emacs-web-server"
+           :files ("web-server-status-codes.el"
+                   "web-server-test.el"
+                   "web-server.el")))
+
+(package! simple-httpd
+  :recipe (
+           :host github
+           :repo "skeeto/emacs-web-server"
+           :files ("simple-httpd-test.el"
+                   "simple-httpd.el")))
 
 (package! impatient-mode)
 
