@@ -72,6 +72,8 @@
 
 (package! rime)
 
+(package! simple-httpd)
+
 (package! impatient-mode)
 
 (package! aidermacs)
