@@ -72,6 +72,7 @@
 
 (package! rime)
 
+(package! web-server)
 (package! simple-httpd)
 
 (package! impatient-mode)
