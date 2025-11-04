@@ -72,14 +72,6 @@
 
 (package! rime)
 
-(package! web-server
-  :recipe (
-           :host github
-           :repo "eschulte/emacs-web-server"
-           :files ("web-server-status-codes.el"
-                   "web-server-test.el"
-                   "web-server.el")))
-
 (package! simple-httpd
   :recipe (
            :host github
@@ -110,6 +102,3 @@
 
 (package! superchat
   :recipe (:host github :repo "yibie/superchat"))
-
-(package! claude-code-ide
-  :recipe (:host github :repo "manzaltu/claude-code-ide.el"))

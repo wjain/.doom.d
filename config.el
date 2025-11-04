@@ -372,8 +372,3 @@
   (when (eq system-type 'windows-nt)
     (setq vterm-shell "E:/msys64/msys2_shell.cmd -defterm -here -no-start -mingw64 -i")
     (setq vterm-conpty-proxy-path "~/.doom.d/bin/conpty_proxy.exe")))
-
-(use-package! claude-code-ide
-  :bind ("C-c C-'" . claude-code-ide-menu) ; Set your favorite keybinding
-  :config
-  (claude-code-ide-emacs-tools-setup)) ; Optionally enable Emacs MCP tools
