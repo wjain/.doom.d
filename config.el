@@ -371,4 +371,24 @@
   :config
   (when (eq system-type 'windows-nt)
     (setq vterm-shell "E:/msys64/msys2_shell.cmd -defterm -here -no-start -mingw64 -i")
+    ;; (setq vterm-shell "powershell")
     (setq vterm-conpty-proxy-path "~/.doom.d/bin/conpty_proxy.exe")))
+
+(use-package! claude-code
+  :config
+  (setq claude-code-terminal-backend 'vterm)
+  ;; (monet-mode 1)
+  (claude-code-mode)
+  )
+
+(use-package! gemini-cli
+  :config
+  (setq gemini-cli-terminal-backend 'vterm)
+  (gemini-cli-mode))
+
+(use-package! ai-code-interface
+  :config
+  (ai-code-set-backend 'claude-code-ide) ; 也可 'aider 'gemini-cli
+  (with-eval-after-load 'magit
+    (ai-code-magit-setup-transients))
+  :bind ("C-c a" . ai-code-menu))

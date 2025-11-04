@@ -102,3 +102,15 @@
 
 (package! superchat
   :recipe (:host github :repo "yibie/superchat"))
+
+(package! claude-code
+  :recipe (:host github :repo "stevemolitor/claude-code.el"))
+
+(package! gemini-cli
+  :recipe (:host github :repo "linchen2chris/gemini-cli.el"))
+
+(package! claude-code-ide
+  :recipe (:host github :repo "manzaltu/claude-code-ide.el"))
+
+(package! ai-code-interface
+  :recipe (:host github :repo "tninja/ai-code-interface.el"))
