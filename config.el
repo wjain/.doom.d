@@ -363,7 +363,7 @@
         :prefix ("x" . "AI")
         :desc "Superchat start" "s" #'superchat
         :desc "Switch to Moonshot" "m" #'my/gptel-set-moonshot
-        :desc "Switch to ChatGLM" "o" #'my/gptel-set-chatglm
+        :desc "Switch to ChatGLM" "c" #'my/gptel-set-chatglm
         :desc "Switch to Ollama" "o" #'my/gptel-set-ollama
         :desc "Switch to OpenAI" "p" #'my/gptel-set-openai))
 
