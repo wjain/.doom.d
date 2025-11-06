@@ -370,7 +370,14 @@
   (when (eq system-type 'windows-nt)
     (setq vterm-shell "E:/msys64/msys2_shell.cmd -defterm -here -no-start -mingw64 -i")
     ;; (setq vterm-shell "powershell")
-    (setq vterm-conpty-proxy-path "~/.doom.d/bin/conpty_proxy.exe")))
+    (setq vterm-conpty-proxy-path "~/.doom.d/bin/conpty_proxy.exe"))
+  ;; 1. 把 C-\ 从 vterm 的送信表里摘掉
+  (define-key vterm-mode-map (kbd "C-\\") nil)
+  ;; 2. 重新绑回 toggle-input-method（或者你用的 rime 切换函数）
+  (define-key vterm-mode-map (kbd "C-\\") #'toggle-input-method)
+  ;; 3. 如果你用 evil，想在 insert/normal 都生效，可再加
+  (when (featurep! :editor evil)
+    (evil-define-key '(normal insert) vterm-mode-map (kbd "C-\\") #'toggle-input-method)))
 
 (use-package! claude-code
   :config
