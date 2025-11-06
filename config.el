@@ -356,8 +356,6 @@
                   gptel-model "qwen3:32b")
     (message "Switched to Ollama backend"))
 
-
-
   ;; 快捷键绑定
   (map! :leader
         :prefix ("x" . "AI")
@@ -391,4 +389,8 @@
   (ai-code-set-backend 'claude-code-ide) ; 也可 'aider 'gemini-cli
   (with-eval-after-load 'magit
     (ai-code-magit-setup-transients))
-  :bind ("C-c a" . ai-code-menu))
+
+  (map! :leader
+        :prefix ("x" . "AI")
+        :desc "AI code menu" "m" #'ai-code-menu))
+
