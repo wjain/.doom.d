@@ -289,36 +289,44 @@
           :models '("moonshot-v1-8k"
                     "moonshot-v1-32k"
                     "moonshot-v1-128k")))
-  (setq-default gptel-backend gptel--backend-moonshot
-                gptel-model "moonshot-v1-8k")
 
   ;; ChatGLM
-  (setq gptel--backend-chatglm-token 'gptel-api-key-from-auth-source)
   (defun gptel--backend-chatglm-header ()
-    (let ((token gptel--backend-chatglm-token))
+    (let ((token (gptel-api-key-from-auth-source)))
       `(("Authorization" .  ,(concat "Bearer " token)))))
-  (setq gptel--backend-chatglm (gptel-make-openai "ChatGLM"
-                                 :host "open.bigmodel.cn"
-                                 :endpoint "/api/paas/v4/chat/completions"
-                                 :models '("glm-4-flash")
-                                 :stream nil
-                                 :header #'gptel--backend-chatglm-header))
-  (setq-default gptel-backend gptel--backend-chatglm
-                gptel-model "glm-4-flash")
+  (setq gptel--backend-chatglm
+        (gptel-make-openai "ChatGLM"
+          :host "open.bigmodel.cn"
+          :endpoint "/api/paas/v4/chat/completions"
+          :models '("glm-4-flash")
+          :stream nil
+          :header #'gptel--backend-chatglm-header))
 
   ;; Ollama
-  (setq gptel--backend-ollama
+  (setq gptel--backend-ollama-other
         (gptel-make-ollama "Ollama"
-          :host "DESKTOP-S8S12TU:11434"
+          :host "other.ollama.xyz:11434"
           :stream t
           :models '("qwen3:32b"
-                    "qwen3:30b-a3b-instruct-2507-q4_K_M"
                     "qwen3-coder:30b"
+                    "gpt-oss:20b"
                     )))
 
-  (setq-default gptel-backend gptel--backend-ollama
-                gptel-model "qwen3:32b")
+  (setq gptel--backend-ollama-cloud
+        (gptel-make-ollama "Ollama"
+          :host "cloud.ollama.xyz:11434"
+          :stream t
+          :models '("deepseek-v3.1:671b-cloud"
+                    "gpt-oss:20b-cloud"
+                    "gpt-oss:120b-cloud"
+                    "kimi-k2:1t-cloud"
+                    "qwen3-coder:480b-cloud"
+                    "glm-4.6:cloud"
+                    "minimax-m2:cloud"
+                    )))
 
+  (setq-default gptel-backend gptel--backend-chatglm
+                gptel-model "glm-4-flash")
   )
 
 ;; Superchat 配置
@@ -335,7 +343,7 @@
 
   ;; 定义后端切换函数
   (defun my/gptel-set-moonshot ()
-    "切换到 ChatGLM 后端"
+    "切换到 moonshot 后端"
     (interactive)
     (setq-default gptel-backend gptel--backend-moonshot
                   gptel-model "moonshot-v1-8k")
@@ -349,13 +357,19 @@
     (message "Switched to ChatGLM backend"))
 
 
-  (defun my/gptel-set-ollama ()
-    "切换到 Ollama 后端"
+  (defun my/gptel-set-ollama-other ()
+    "切换到 Ollama other 后端"
     (interactive)
-    (setq-default gptel-backend gptel--backend-ollama
-                  gptel-model "qwen3:32b")
-    (message "Switched to Ollama backend"))
+    (setq-default gptel-backend gptel--backend-ollama-other
+                  gptel-model "gpt-oss:20b")
+    (message "Switched to Ollama-other backend"))
 
+  (defun my/gptel-set-ollama-cloud ()
+    "切换到 Ollama cloude 后端"
+    (interactive)
+    (setq-default gptel-backend gptel--backend-ollama-cloud
+                  gptel-model "gpt-oss:20b-cloud")
+    (message "Switched to Ollama-cloud backend"))
 
 
   ;; 快捷键绑定
@@ -363,8 +377,9 @@
         :prefix ("x" . "AI")
         :desc "Superchat start" "s" #'superchat
         :desc "Switch to Moonshot" "m" #'my/gptel-set-moonshot
-        :desc "Switch to ChatGLM" "c" #'my/gptel-set-chatglm
-        :desc "Switch to Ollama" "o" #'my/gptel-set-ollama
+        :desc "Switch to ChatGLM" "C" #'my/gptel-set-chatglm
+        :desc "Switch to Ollama" "o" #'my/gptel-set-ollama-other
+        :desc "Switch to Ollama" "c" #'my/gptel-set-ollama-cloud
         :desc "Switch to OpenAI" "p" #'my/gptel-set-openai))
 
 (use-package! vterm
