@@ -103,6 +103,9 @@
 (package! superchat
   :recipe (:host github :repo "yibie/superchat"))
 
+(package! eca
+  :recipe (:host github :repo "editor-code-assistant/eca-emacs" :files ("*.el")))
+
 (package! claude-code
   :recipe (:host github :repo "stevemolitor/claude-code.el"))
 
