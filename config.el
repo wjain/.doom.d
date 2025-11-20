@@ -280,6 +280,24 @@
 (use-package! gptel
   :config
   (setq gptel-default-mode 'org-mode)
+
+  ;; OpenRouter offers an OpenAI compatible API
+  (setq gptel--backend-openrouter
+        (gptel-make-openai "OpenRouter"               ;Any name you want
+          :host "openrouter.ai"
+          :endpoint "/api/v1/chat/completions"
+          :stream t
+          :key 'gptel-api-key-from-auth-source
+          :models '(x-ai/grok-4.1-fast
+                    kwaipilot/kat-coder-pro:free
+                    nvidia/nemotron-nano-12b-v2-vl:free
+                    alibaba/tongyi-deepresearch-30b-a3b:free
+                    meituan/longcat-flash-chat:free
+                    openai/gpt-oss-20b:free
+                    z-ai/glm-4.5-air:free
+                    qwen/qwen3-coder:free
+                    moonshotai/kimi-k2:free)))
+
   ;; Moonshot
   (setq gptel--backend-moonshot
         (gptel-make-openai "Moonshot"
@@ -342,6 +360,13 @@
   (setq superchat-port 8080)
 
   ;; 定义后端切换函数
+  (defun my/gptel-set-openrouter ()
+    "切换到 openrouter 后端"
+    (interactive)
+    (setq-default gptel-backend gptel--backend-openrouter
+                  gptel-model "x-ai/grok-4.1-fast")
+    (message "Switched to OpenRouter backend"))
+
   (defun my/gptel-set-moonshot ()
     "切换到 moonshot 后端"
     (interactive)
@@ -376,6 +401,7 @@
   (map! :leader
         :prefix ("x" . "AI")
         :desc "Superchat start" "s" #'superchat
+        :desc "Switch to OpenRouter" "r" #'my/gptel-set-openrouter
         :desc "Switch to Moonshot" "m" #'my/gptel-set-moonshot
         :desc "Switch to ChatGLM" "C" #'my/gptel-set-chatglm
         :desc "Switch to Ollama other" "o" #'my/gptel-set-ollama-other
