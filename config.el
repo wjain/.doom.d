@@ -316,7 +316,8 @@
         (gptel-make-openai "ChatGLM"
           :host "open.bigmodel.cn"
           :endpoint "/api/paas/v4/chat/completions"
-          :models '("glm-4-flash")
+          :models '("glm-4.5-flash"
+                    "glm-4.5-air")
           :stream nil
           :header #'gptel--backend-chatglm-header))
 
