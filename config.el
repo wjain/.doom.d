@@ -317,9 +317,28 @@
           :host "open.bigmodel.cn"
           :endpoint "/api/paas/v4/chat/completions"
           :models '("glm-4.5-flash"
-                    "glm-4.5-air")
+                    "glm-4.5-air"
+                    "glm-4.6")
           :stream nil
           :header #'gptel--backend-chatglm-header))
+
+  ;; KatCode
+  (setq gptel--backend-katcode
+        (gptel-make-openai "KatCode"
+          :host "wanqing.streamlakeapi.com"
+          :endpoint "/api/gateway/v1/endpoints"
+          :key 'gptel-api-key-from-auth-source
+          :models '("ep-bv6yb0-1761296220636855117"
+                    "ep-5rvekr-1761296419731741450")))
+
+  ;; LongCat
+  (setq gptel--backend-longcat
+        (gptel-make-openai "LongCat"
+          :host "api.longcat.chat"
+          :endpoint "/openai/v1/chat/completions"
+          :key 'gptel-api-key-from-auth-source
+          :models '("LongCat-Flash-Chat"
+                    "LongCat-Flash-Thinking")))
 
   ;; Ollama
   (setq gptel--backend-ollama-other
@@ -345,7 +364,7 @@
                     )))
 
   (setq-default gptel-backend gptel--backend-chatglm
-                gptel-model "glm-4-flash")
+                gptel-model "glm-4.5-flash")
   )
 
 ;; Superchat 配置
@@ -382,6 +401,19 @@
                   gptel-model "glm-4.5-flash")
     (message "Switched to ChatGLM backend"))
 
+  (defun my/gptel-set-katcode ()
+    "切换到 katcode 后端"
+    (interactive)
+    (setq-default gptel-backend gptel--backend-katcode
+                  gptel-model "ep-5rvekr-1761296419731741450")
+    (message "Switched to katcode backend"))
+
+  (defun my/gptel-set-longcat ()
+    "切换到 longcat 后端"
+    (interactive)
+    (setq-default gptel-backend gptel--backend-longcat
+                  gptel-model "LongCat-Flash-Thinking")
+    (message "Switched to longcat backend"))
 
   (defun my/gptel-set-ollama-other ()
     "切换到 Ollama other 后端"
@@ -404,9 +436,11 @@
         :desc "Superchat start" "s" #'superchat
         :desc "Switch to OpenRouter" "r" #'my/gptel-set-openrouter
         :desc "Switch to Moonshot" "m" #'my/gptel-set-moonshot
-        :desc "Switch to ChatGLM" "C" #'my/gptel-set-chatglm
-        :desc "Switch to Ollama other" "o" #'my/gptel-set-ollama-other
-        :desc "Switch to Ollama cloud" "c" #'my/gptel-set-ollama-cloud
+        :desc "Switch to ChatGLM" "c" #'my/gptel-set-chatglm
+        :desc "Switch to KatCode" "k" #'my/gptel-set-katcode
+        :desc "Switch to LongCat" "L" #'my/gptel-set-longcat
+        :desc "Switch to Ollama other" "O" #'my/gptel-set-ollama-other
+        :desc "Switch to Ollama cloud" "C" #'my/gptel-set-ollama-cloud
         :desc "Switch to OpenAI" "p" #'my/gptel-set-openai))
 
 (use-package! vterm
@@ -445,3 +479,6 @@
         :prefix ("x" . "AI")
         :desc "AI code menu" "m" #'ai-code-menu))
 
+(use-package! eca
+  :config
+  (setq eca-extra-args '("--verbose" "--log-level" "debug")))
