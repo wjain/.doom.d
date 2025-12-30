@@ -317,8 +317,8 @@
           :host "open.bigmodel.cn"
           :endpoint "/api/paas/v4/chat/completions"
           :models '("glm-4.5-flash"
-                    "glm-4.5-air"
-                    "glm-4.6")
+                    "glm-4.6"
+                    "glm-4.7")
           :stream nil
           :header #'gptel--backend-chatglm-header))
 
@@ -398,7 +398,7 @@
     "切换到 ChatGLM 后端"
     (interactive)
     (setq-default gptel-backend gptel--backend-chatglm
-                  gptel-model "glm-4.5-flash")
+                  gptel-model "glm-4.7")
     (message "Switched to ChatGLM backend"))
 
   (defun my/gptel-set-katcode ()
