@@ -317,6 +317,8 @@
           :host "open.bigmodel.cn"
           :endpoint "/api/paas/v4/chat/completions"
           :models '("glm-4.5-flash"
+                    "glm-4.6v-flash"
+                    "glm-4.6v"
                     "glm-4.6"
                     "glm-4.7")
           :stream nil
