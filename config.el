@@ -365,6 +365,17 @@
                     "minimax-m2:cloud"
                     )))
 
+  (setq gptel--backend-packy-proxy
+        (gptel-make-openai "packyproxy"
+          :protocol "http"
+          :host "packyproxy.ai:8080"
+          :key "sk-dU6zTvAEQ48k9rY0jTQz3r3U0PcCUvTVGcshMxSC3LDgq96a"
+          :endpoint "/proxy/packyapi//v1/chat/completions"
+          :stream t
+          :models '("claude-haiku-4-5-20251001"
+                    "claude-sonnet-4-5-20250929"
+                    )))
+
   (setq-default gptel-backend gptel--backend-chatglm
                 gptel-model "glm-4.5-flash")
   )
@@ -430,6 +441,13 @@
     (setq-default gptel-backend gptel--backend-ollama-cloud
                   gptel-model "gpt-oss:20b-cloud")
     (message "Switched to Ollama-cloud backend"))
+
+  (defun my/gptel-set-packy-proxy ()
+    "切换到 Ollama cloude 后端"
+    (interactive)
+    (setq-default gptel-backend gptel--backend-packy-proxy
+                  gptel-model "claude-haiku-4-5-20251001")
+    (message "Switched to packy backend"))
 
 
   ;; 快捷键绑定
