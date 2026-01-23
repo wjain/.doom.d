@@ -398,7 +398,7 @@
     "切换到 ChatGLM 后端"
     (interactive)
     (setq-default gptel-backend gptel--backend-chatglm
-                  gptel-model "glm-4.7")
+                  gptel-model "glm-4.7-flash")
     (message "Switched to ChatGLM backend"))
 
   (defun my/gptel-set-katcode ()
