@@ -316,11 +316,8 @@
         (gptel-make-openai "ChatGLM"
           :host "open.bigmodel.cn"
           :endpoint "/api/paas/v4/chat/completions"
-          :models '("glm-4.5-flash"
-                    "glm-4.6v-flash"
-                    "glm-4.6v"
-                    "glm-4.6"
-                    "glm-4.7")
+          :models '("glm-4.7-flash"
+                    "glm-4.6v-flash")
           :stream nil
           :header #'gptel--backend-chatglm-header))
 
@@ -328,10 +325,11 @@
   (setq gptel--backend-katcode
         (gptel-make-openai "KatCode"
           :host "wanqing.streamlakeapi.com"
-          :endpoint "/api/gateway/v1/endpoints"
+          :endpoint "/api/gateway/v1/endpoints/chat/completions"
           :key 'gptel-api-key-from-auth-source
-          :models '("ep-bv6yb0-1761296220636855117"
-                    "ep-5rvekr-1761296419731741450")))
+          :models '("ep-tk4wbs-1767076969907658453"  ;; KAT-Coder-Pro-V1
+                    "ep-xc4wfb-1767076969893416310"  ;; KAT-Coder-Air-V1
+                    )))
 
   ;; LongCat
   (setq gptel--backend-longcat
@@ -363,17 +361,6 @@
                     "qwen3-coder:480b-cloud"
                     "glm-4.6:cloud"
                     "minimax-m2:cloud"
-                    )))
-
-  (setq gptel--backend-packy-proxy
-        (gptel-make-openai "packyproxy"
-          :protocol "http"
-          :host "packyproxy.ai:8080"
-          :key "sk-dU6zTvAEQ48k9rY0jTQz3r3U0PcCUvTVGcshMxSC3LDgq96a"
-          :endpoint "/proxy/packyapi//v1/chat/completions"
-          :stream t
-          :models '("claude-haiku-4-5-20251001"
-                    "claude-sonnet-4-5-20250929"
                     )))
 
   (setq-default gptel-backend gptel--backend-chatglm
@@ -418,7 +405,7 @@
     "切换到 katcode 后端"
     (interactive)
     (setq-default gptel-backend gptel--backend-katcode
-                  gptel-model "ep-5rvekr-1761296419731741450")
+                  gptel-model "ep-xc4wfb-1767076969893416310")
     (message "Switched to katcode backend"))
 
   (defun my/gptel-set-longcat ()
