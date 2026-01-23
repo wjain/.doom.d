@@ -476,7 +476,7 @@
   (setq gemini-cli-terminal-backend 'vterm)
   (gemini-cli-mode))
 
-(use-package! ai-code-interface
+(use-package! ai-code
   :config
   (ai-code-set-backend 'claude-code-ide) ; 也可 'aider 'gemini-cli
   (with-eval-after-load 'magit
