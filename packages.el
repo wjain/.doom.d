@@ -106,14 +106,18 @@
 (package! eca
   :recipe (:host github :repo "editor-code-assistant/eca-emacs" :files ("*.el")))
 
-(package! claude-code
-  :recipe (:host github :repo "stevemolitor/claude-code.el"))
+;; (package! claude-code
+;;   :recipe (:host github :repo "stevemolitor/claude-code.el"))
 
-(package! gemini-cli
-  :recipe (:host github :repo "linchen2chris/gemini-cli.el"))
+;; (package! gemini-cli
+;;   :recipe (:host github :repo "linchen2chris/gemini-cli.el"))
 
 (package! claude-code-ide
   :recipe (:host github :repo "manzaltu/claude-code-ide.el"))
 
 (package! ai-code
   :recipe (:host github :repo "tninja/ai-code-interface.el"))
+
+(package! shell-maker)
+(package! acp)
+(package! agent-shell)

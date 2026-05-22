@@ -464,17 +464,17 @@
   (when (featurep! :editor evil)
     (evil-define-key '(normal insert) vterm-mode-map (kbd "C-\\") #'toggle-input-method)))
 
-(use-package! claude-code
-  :config
-  (setq claude-code-terminal-backend 'vterm)
-  ;; (monet-mode 1)
-  (claude-code-mode)
-  )
+;; (use-package! claude-code
+;;   :config
+;;   (setq claude-code-terminal-backend 'vterm)
+;;   ;; (monet-mode 1)
+;;   (claude-code-mode)
+;;   )
 
-(use-package! gemini-cli
-  :config
-  (setq gemini-cli-terminal-backend 'vterm)
-  (gemini-cli-mode))
+;; (use-package! gemini-cli
+;;   :config
+;;   (setq gemini-cli-terminal-backend 'vterm)
+;;   (gemini-cli-mode))
 
 (use-package! ai-code
   :config
@@ -489,3 +489,9 @@
 (use-package! eca
   :config
   (setq eca-extra-args '("--verbose" "--log-level" "debug")))
+
+(use-package! agent-shell
+  :after acp
+  :config
+  (require 'acp)
+  (require 'agent-shell))
