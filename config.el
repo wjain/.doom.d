@@ -461,31 +461,39 @@
     (when (modulep! :editor evil)
       (evil-define-key '(normal insert) vterm-mode-map (kbd "C-\\") #'toggle-input-method))))
 
-;; (use-package! claude-code
-;;   :config
-;;   (setq claude-code-terminal-backend 'vterm)
-;;   ;; (monet-mode 1)
-;;   (claude-code-mode)
-;;   )
-
-;; (use-package! gemini-cli
-;;   :config
-;;   (setq gemini-cli-terminal-backend 'vterm)
-;;   (gemini-cli-mode))
-
-(use-package! ai-code
-  :config
-  (ai-code-set-backend 'claude-code-ide) ; 也可 'aider 'gemini-cli
-  (with-eval-after-load 'magit
-    (ai-code-magit-setup-transients))
-
-  (map! :leader
-        :prefix ("x" . "AI")
-        :desc "AI code menu" "m" #'ai-code-menu))
-
 (use-package! eca
   :config
   (setq eca-extra-args '("--verbose" "--log-level" "debug")))
+
+(defvar my/fleet-role-alist
+  '((qwen     . "蓝队-主笔")
+    (opencode . "蓝队-协作者")
+    (gemini   . "红队-评审")
+    (trae     . "红队-审查"))
+  "角色映射：identifier -> 描述")
+
+(defun my/agent-shell-all-sessions ()
+  "返回所有活跃 agent-shell buffer 列表。"
+  (cl-remove-if-not
+   (lambda (b) (with-current-buffer b (derived-mode-p 'agent-shell-mode)))
+   (buffer-list)))
+
+(defun my/agent-fleet-status ()
+  "一键汇总所有 Agent 的当前状态。"
+  (interactive)
+  (meta-agent-shell-send
+   "请立即扫描所有活跃的 agent-shell 会话，给出当前的汇总进度报告，并指出是否有任何 Agent 陷入了死循环或阻塞。"))
+
+(defun my/agent-broadcast (msg)
+  "将指令广播给所有 Agent。"
+  (interactive "sBroadcast Message: ")
+  (dolist (buf (my/agent-shell-all-sessions))
+    (with-current-buffer buf
+      (agent-shell-send msg))))
+
+(defun my/agent-role (identifier)
+  "返回 Agent 的角色描述。"
+  (alist-get identifier my/fleet-role-alist "未知"))
 
 (use-package! agent-shell
   :after acp
@@ -493,7 +501,6 @@
   (require 'acp)
   (require 'agent-shell)
 
-  ;; 默认使用 Qwen (SiliconFlow)
   (setq agent-shell-agent-configs
         (list
          (agent-shell-make-agent-config
@@ -510,6 +517,28 @@
              :environment-variables
              (list (format "SILICONFLOW_API_KEY=%s"
                            (getenv "SILICONFLOW_API_KEY"))))))
+         (agent-shell-make-agent-config
+          :identifier 'opencode
+          :mode-line-name "OpenCode"
+          :buffer-name "OpenCode"
+          :shell-prompt "OpenCode> "
+          :shell-prompt-regexp "OpenCode> "
+          :client-maker
+          (lambda (_buffer)
+            (agent-shell--make-acp-client
+             :command "opencode"
+             :command-params '("acp"))))
+         (agent-shell-make-agent-config
+          :identifier 'gemini
+          :mode-line-name "Gemini"
+          :buffer-name "Gemini"
+          :shell-prompt "Gemini> "
+          :shell-prompt-regexp "Gemini> "
+          :client-maker
+          (lambda (_buffer)
+            (agent-shell--make-acp-client
+             :command "gemini"
+             :command-params '("--acp"))))
          (agent-shell-make-agent-config
           :identifier 'trae
           :mode-line-name "Trae"
@@ -537,7 +566,31 @@
          :desc "Start heartbeat" "h" #'meta-agent-shell-heartbeat-start
          :desc "Stop heartbeat" "H" #'meta-agent-shell-heartbeat-stop
          :desc "Send heartbeat now" "s" #'meta-agent-shell-heartbeat-send-now
-         :desc "STOP ALL AGENTS" "!" #'meta-agent-shell-big-red-button)))
+         :desc "Fleet status" "f" #'my/agent-fleet-status
+         :desc "Broadcast to all" "b" #'my/agent-broadcast
+         :desc "STOP ALL AGENTS" "!" #'meta-agent-shell-big-red-button))
+
+  ;; 红队协调：当 meta-agent 收到请求时，自动唤起红队 Agent 做评审
+  (defun my/agent-redteam-review ()
+    "启动红队评审：Gemini + Trae 对当前方案做评审。"
+    (interactive)
+    (let ((blue-buf (get-buffer "*agent-shell: Qwen*"))
+          (red-bufs (list (get-buffer "*agent-shell: Gemini*")
+                          (get-buffer "*agent-shell: Trae*"))))
+      (if (not blue-buf)
+          (message "Blue team buffer not found. Start Qwen first.")
+        (with-current-buffer blue-buf
+          (agent-shell-send "请输出当前方案的完整文本，以便红队评审。"))
+        (dolist (rb red-bufs)
+          (when rb
+            (with-current-buffer rb
+              (agent-shell-send
+               "你扮演红队（评审角色）。请评审 Qwen 刚才的方案，从安全性、可维护性、完整性角度提出改进建议。"))))
+        (message "红队评审已启动。"))))
+
+  (map! :leader
+        :prefix ("A" . "agent")
+        :desc "Red team review" "r" #'my/agent-redteam-review))
 
 (use-package! agent-shell-workspace
   :after agent-shell
