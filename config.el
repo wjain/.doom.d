@@ -532,10 +532,11 @@
           :shell-prompt "Qwen> "
           :shell-prompt-regexp "Qwen> "
           :client-maker
-          (lambda (_buffer)
-            (agent-shell--make-acp-client
+          (lambda (buffer)
+            (acp-make-client
              :command "qwen"
              :command-params '("--acp")
+             :context-buffer buffer
              :environment-variables
              (list (format "SILICONFLOW_API_KEY=%s"
                            (getenv "SILICONFLOW_API_KEY"))))))
@@ -546,10 +547,11 @@
           :shell-prompt "OpenCode> "
           :shell-prompt-regexp "OpenCode> "
           :client-maker
-          (lambda (_buffer)
-            (agent-shell--make-acp-client
+          (lambda (buffer)
+            (acp-make-client
              :command "opencode"
-             :command-params '("acp"))))
+             :command-params '("acp")
+             :context-buffer buffer)))
          (agent-shell-make-agent-config
           :identifier 'gemini
           :mode-line-name "Gemini"
@@ -557,10 +559,11 @@
           :shell-prompt "Gemini> "
           :shell-prompt-regexp "Gemini> "
           :client-maker
-          (lambda (_buffer)
-            (agent-shell--make-acp-client
+          (lambda (buffer)
+            (acp-make-client
              :command "gemini"
-             :command-params '("--acp"))))
+             :command-params '("--acp")
+             :context-buffer buffer)))
          (agent-shell-make-agent-config
           :identifier 'claude
           :mode-line-name "Claude"
@@ -568,14 +571,16 @@
           :shell-prompt "Claude> "
           :shell-prompt-regexp "Claude> "
           :client-maker
-          (lambda (_buffer)
-            (agent-shell--make-acp-client
+          (lambda (buffer)
+            (acp-make-client
              :command "claude-agent-acp"
              :command-params '()
+             :context-buffer buffer
              :environment-variables
              (list (format "ANTHROPIC_API_KEY=%s"
                            (getenv "ANTHROPIC_API_KEY"))))))))
-  (setq agent-shell-preferred-agent-config 'qwen))
+  (setq agent-shell-preferred-agent-config 'qwen
+        acp-logging-enabled t))
 
 ;; agent 集群
 (use-package! meta-agent-shell
