@@ -579,8 +579,7 @@
              :environment-variables
              (list (format "ANTHROPIC_API_KEY=%s"
                            (getenv "ANTHROPIC_API_KEY"))))))))
-  (setq agent-shell-preferred-agent-config 'qwen
-        acp-logging-enabled t))
+  (setq acp-logging-enabled t))
 
 ;; agent 集群
 (use-package! meta-agent-shell
@@ -588,16 +587,16 @@
   :config
   (defun my/meta-agent-start (&optional arg buffer-name)
     "通过 `agent-shell-start' 启动，支持 meta-instruction 注入。"
-    (let ((config (agent-shell--resolve-preferred-config)))
-      (unless config
-        (user-error "No preferred agent config. Set `agent-shell-preferred-agent-config'"))
+    (let ((config (or (agent-shell--resolve-preferred-config)
+                      (agent-shell-select-config))))
       (when (and buffer-name (not (string= buffer-name "")))
         (plist-put config :buffer-name buffer-name))
       (let ((buf (agent-shell-start :config config)))
         (when buf (pop-to-buffer buf)))))
 
   (setq meta-agent-shell-heartbeat-file "~/heartbeat.org")
-  (setq meta-agent-shell-start-function #'my/meta-agent-start)
+  (setq meta-agent-shell-start-function #'my/meta-agent-start
+        agent-shell-preferred-agent-config nil)
   (define-key doom-leader-map "om" nil)
   (map! :leader
         (:prefix ("o m" . "meta-agent")
