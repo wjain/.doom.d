@@ -581,8 +581,18 @@
 (use-package! meta-agent-shell
   :after agent-shell
   :config
+  (defun my/meta-agent-start (&optional arg buffer-name)
+    "通过 `agent-shell-start' 启动，支持 meta-instruction 注入。"
+    (let ((config (agent-shell--resolve-preferred-config)))
+      (unless config
+        (user-error "No preferred agent config. Set `agent-shell-preferred-agent-config'"))
+      (when (and buffer-name (not (string= buffer-name "")))
+        (plist-put config :buffer-name buffer-name))
+      (let ((buf (agent-shell-start :config config)))
+        (when buf (pop-to-buffer buf)))))
+
   (setq meta-agent-shell-heartbeat-file "~/heartbeat.org")
-  (setq meta-agent-shell-start-function #'agent-shell)
+  (setq meta-agent-shell-start-function #'my/meta-agent-start)
   (define-key doom-leader-map "om" nil)
   (map! :leader
         (:prefix ("o m" . "meta-agent")
