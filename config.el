@@ -472,6 +472,28 @@
      (claude   . "红队-审查"))
   "角色映射：identifier -> 描述")
 
+(defun my/agent-buffer-content (buf)
+  "从 BUF 中提取文本内容，跳过前导 prompt 行。"
+  (when (bufferp buf)
+    (with-current-buffer buf
+      (let* ((str (buffer-substring-no-properties (point-min) (point-max)))
+             (lines (split-string str "\n")))
+        (string-join
+         (cl-remove-if (lambda (l) (string-match-p "^\\(Qwen>\\|OpenCode>\\|Gemini>\\|Claude>\\|Propose>\\|Send>\\|Execute>\\|# \\)" l)) lines)
+         "\n")))))
+
+(defun my/agent-collect-red-outputs ()
+  "收集所有红队 Agent buffer 的最后一段输出。"
+  (let ((red-buffers '("*agent-shell: Gemini*" "*agent-shell: Claude*" "*agent-shell: OpenCode*")))
+    (mapcar (lambda (name)
+              (let ((buf (get-buffer name)))
+                (when buf
+                  (with-current-buffer buf
+                    (cons name (buffer-substring-no-properties
+                                (max (point-min) (- (point-max) 2000))
+                                (point-max)))))))
+            red-buffers)))
+
 (defun my/agent-shell-all-sessions ()
   "返回所有活跃 agent-shell buffer 列表。"
   (cl-remove-if-not
@@ -573,27 +595,103 @@
          :desc "Broadcast to all" "b" #'my/agent-broadcast
          :desc "STOP ALL AGENTS" "!" #'meta-agent-shell-big-red-button))
 
-  ;; 红队协调：当 meta-agent 收到请求时，自动唤起红队 Agent 做评审
+  ;; 红队协调
   (defun my/agent-redteam-review ()
-    "启动红队评审：Gemini + Claude 对当前方案做评审。"
+    "从蓝队 buffer 提取内容，内联发送给所有红队 Agent 评审。"
     (interactive)
-    (let ((blue-buf (get-buffer "*agent-shell: Qwen*"))
-          (red-bufs (list (get-buffer "*agent-shell: Gemini*")
-                          (get-buffer "*agent-shell: Claude*"))))
-      (if (not blue-buf)
-          (message "Blue team buffer not found. Start Qwen first.")
-        (with-current-buffer blue-buf
-          (agent-shell-send "请输出当前方案的完整文本，以便红队评审。"))
-        (dolist (rb red-bufs)
-          (when rb
-            (with-current-buffer rb
-              (agent-shell-send
-               "你扮演红队（评审角色）。请评审 Qwen 刚才的方案，从安全性、可维护性、完整性角度提出改进建议。"))))
-        (message "红队评审已启动。"))))
+    (let* ((blue-names '("*agent-shell: Qwen*" "*agent-shell: OpenCode*"))
+           (red-specs `(("*agent-shell: Gemini*"  . "你扮演红队评审（侧重逻辑漏洞、安全风险）。请严厉批判以下方案：\n\n")
+                        ("*agent-shell: Claude*"   . "你扮演红队评审（侧重执行落地、成本效益）。请无情地找出现实中的不可行之处：\n\n")))
+           (draft ""))
+      ;; 收集蓝队输出
+      (dolist (bn blue-names)
+        (let ((buf (get-buffer bn)))
+          (when buf
+            (setq draft (concat draft
+                         (format "===== %s =====\n" bn)
+                         (my/agent-buffer-content buf) "\n\n")))))
+      (if (string-blank-p draft)
+          (message "没有找到蓝队 Agent buffer。请先启动蓝队（Qwen/OpenCode）并生成初稿。")
+        ;; 分发给红队
+        (dolist (spec red-specs)
+          (let ((buf (get-buffer (car spec)))
+                (prompt (cdr spec)))
+            (when buf
+              (with-current-buffer buf
+                (agent-shell-send (concat prompt draft))))))
+        (message "红队评审已启动：Gemini + Claude 正在围攻初稿。"))))
+
+  (defun my/agent-synthesize ()
+    "收集所有红队反馈，发给蓝队主笔做综合修订，生成终稿。"
+    (interactive)
+    (let* ((blue-buf (get-buffer "*agent-shell: Qwen*"))
+           (red-outputs (my/agent-collect-red-outputs))
+           (synthesis-prompt "# 综合修订指令
+
+请作为首席编辑，根据以下红队反馈对原始方案进行综合修订：
+
+1. 逐条回应红队的批评（接受/拒绝并说明理由）
+2. 输出一份吸收了合理建议的修订版方案
+3. 标记出哪些改动是源自信哪个红队的反馈
+
+"))
+      (unless blue-buf
+        (user-error "没有找到蓝队主笔 buffer (Qwen)。请先启动。"))
+      (with-current-buffer blue-buf
+        (dolist (ro red-outputs)
+          (when ro
+            (setq synthesis-prompt (concat synthesis-prompt
+                                   (format "\n--- %s 的反馈 ---\n%s\n"
+                                           (car ro) (cdr ro))))))
+        (agent-shell-send synthesis-prompt))
+      (message "综合修订指令已发送给 Qwen。")))
+
+  (defun my/agent-export-to-org (filepath)
+    "将 Qwen buffer 的最新一段输出导出为 .org 文件，附带评审 Checklist。"
+    (interactive "FExport to org file: ")
+    (let* ((qwen-buf (get-buffer "*agent-shell: Qwen*"))
+           (content (when qwen-buf
+                      (with-current-buffer qwen-buf
+                        (buffer-substring-no-properties
+                         (max (point-min) (- (point-max) 4000))
+                         (point-max)))))
+           (org-content (format "#+TITLE: 方案评审终稿
+#+DATE: %s
+#+AUTHOR: 舰队输出
+
+* 方案内容
+
+%s
+
+* 评审清单
+
+- [ ] 逻辑完整性
+- [ ] 安全性评估
+- [ ] 执行可行性
+- [ ] 成本合理性
+- [ ] 可维护性
+- [ ] 红队建议已采纳
+- [ ] 用户终审确认
+
+* 终审意见
+
+- 批准 / 需修订 / 驳回
+- 补充说明：
+
+"
+                                (format-time-string "%Y-%m-%d %H:%M")
+                                (or content "（无内容）"))))
+      (with-temp-file filepath
+        (insert org-content))
+      (when (fboundp 'find-file)
+        (find-file filepath))
+      (message "已导出: %s" filepath)))
 
   (map! :leader
         :prefix ("A" . "agent")
-        :desc "Red team review" "r" #'my/agent-redteam-review))
+        :desc "Red team review"   "r" #'my/agent-redteam-review
+        :desc "Synthesize"        "s" #'my/agent-synthesize
+        :desc "Export to org"     "e" #'my/agent-export-to-org))
 
 (use-package! agent-shell-workspace
   :after agent-shell
