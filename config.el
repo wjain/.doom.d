@@ -491,4 +491,71 @@
   :after acp
   :config
   (require 'acp)
-  (require 'agent-shell))
+  (require 'agent-shell)
+
+  ;; 默认使用 Qwen (SiliconFlow)
+  (setq agent-shell-preferred-agent-config
+        (agent-shell-make-agent-config
+         :identifier 'qwen
+         :mode-line-name "Qwen"
+         :buffer-name "Qwen"
+         :shell-prompt "Qwen> "
+         :shell-prompt-regexp "Qwen> "
+         :client-maker
+         (lambda ()
+           (acp-make-client
+            :command "qwen"
+            :command-params '("--acp")
+            :environment-variables
+            (list (format "SILICONFLOW_API_KEY=%s"
+                          (getenv "SILICONFLOW_API_KEY"))))))))
+
+;; agent 集群
+(use-package! meta-agent-shell
+  :after agent-shell
+  :config
+  (setq meta-agent-shell-heartbeat-file "~/heartbeat.org")
+  (setq meta-agent-shell-start-function #'agent-shell)
+  (define-key doom-leader-map "om" nil)
+  (map! :leader
+        (:prefix ("o m" . "meta-agent")
+         :desc "Meta-agent session" "m" #'meta-agent-shell-start
+         :desc "Project dispatcher" "d" #'meta-agent-shell-jump-to-dispatcher
+         :desc "Start heartbeat" "h" #'meta-agent-shell-heartbeat-start
+         :desc "Stop heartbeat" "H" #'meta-agent-shell-heartbeat-stop
+         :desc "Send heartbeat now" "s" #'meta-agent-shell-heartbeat-send-now
+         :desc "STOP ALL AGENTS" "!" #'meta-agent-shell-big-red-button)))
+
+(use-package! agent-shell-workspace
+  :after agent-shell
+  :config
+  (map! :leader
+        :desc "Agent workspace" "A W" #'agent-shell-workspace-toggle))
+
+(use-package! agent-shell-attention
+  :after agent-shell
+  :config
+  (setopt agent-shell-attention-render-function
+          #'agent-shell-attention-render-active)
+  (agent-shell-attention-mode))
+
+(use-package! agent-shell-manager
+  :after agent-shell
+  :config
+  (map! :leader
+        :desc "Agent manager" "A m" #'agent-shell-manager-toggle))
+
+(use-package! agent-shell-sidebar
+  :after agent-shell
+  :config
+  (setq agent-shell-sidebar-width "30%"
+        agent-shell-sidebar-position 'right)
+  (map! :leader
+        :desc "Agent sidebar" "A s" #'agent-shell-sidebar-toggle))
+
+(use-package! agent-shell-web
+  :after agent-shell
+  :config
+  (setq agent-shell-web-port 8888)
+  (map! :leader
+        :desc "Agent web UI" "A w" #'agent-shell-web-start))

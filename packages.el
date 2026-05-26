@@ -121,3 +121,17 @@
 (package! shell-maker)
 (package! acp)
 (package! agent-shell)
+
+;; agent-shell 集群相关
+(package! meta-agent-shell
+  :recipe (:host github :repo "ElleNajt/meta-agent-shell"))
+(package! agent-shell-workspace
+  :recipe (:host github :repo "gveres/agent-shell-workspace"))
+(package! agent-shell-attention
+  :recipe (:host github :repo "ultronozm/agent-shell-attention.el"))
+(package! agent-shell-manager
+  :recipe (:host github :repo "jethrokuan/agent-shell-manager"))
+(package! agent-shell-sidebar
+  :recipe (:host github :repo "cmacrae/agent-shell-sidebar"))
+(package! agent-shell-web
+  :recipe (:host github :repo "wesnel/agent-shell-web"))
