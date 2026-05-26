@@ -502,8 +502,8 @@
          :shell-prompt "Qwen> "
          :shell-prompt-regexp "Qwen> "
          :client-maker
-         (lambda ()
-           (acp-make-client
+         (lambda (_buffer)
+           (agent-shell--make-acp-client
             :command "qwen"
             :command-params '("--acp")
             :environment-variables
