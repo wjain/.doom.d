@@ -494,21 +494,34 @@
   (require 'agent-shell)
 
   ;; 默认使用 Qwen (SiliconFlow)
-  (setq agent-shell-preferred-agent-config
-        (agent-shell-make-agent-config
-         :identifier 'qwen
-         :mode-line-name "Qwen"
-         :buffer-name "Qwen"
-         :shell-prompt "Qwen> "
-         :shell-prompt-regexp "Qwen> "
-         :client-maker
-         (lambda (_buffer)
-           (agent-shell--make-acp-client
-            :command "qwen"
-            :command-params '("--acp")
-            :environment-variables
-            (list (format "SILICONFLOW_API_KEY=%s"
-                          (getenv "SILICONFLOW_API_KEY"))))))))
+  (setq agent-shell-agent-configs
+        (list
+         (agent-shell-make-agent-config
+          :identifier 'qwen
+          :mode-line-name "Qwen"
+          :buffer-name "Qwen"
+          :shell-prompt "Qwen> "
+          :shell-prompt-regexp "Qwen> "
+          :client-maker
+          (lambda (_buffer)
+            (agent-shell--make-acp-client
+             :command "qwen"
+             :command-params '("--acp")
+             :environment-variables
+             (list (format "SILICONFLOW_API_KEY=%s"
+                           (getenv "SILICONFLOW_API_KEY"))))))
+         (agent-shell-make-agent-config
+          :identifier 'trae
+          :mode-line-name "Trae"
+          :buffer-name "Trae"
+          :shell-prompt "Trae> "
+          :shell-prompt-regexp "Trae> "
+          :client-maker
+          (lambda (_buffer)
+            (agent-shell--make-acp-client
+             :command "traecli"
+             :command-params '("acp" "serve"))))))
+  (setq agent-shell-preferred-agent-config 'qwen))
 
 ;; agent 集群
 (use-package! meta-agent-shell
