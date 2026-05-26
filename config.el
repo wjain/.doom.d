@@ -469,7 +469,7 @@
   '((qwen     . "蓝队-主笔")
     (opencode . "蓝队-协作者")
     (gemini   . "红队-评审")
-    (trae     . "红队-审查"))
+     (claude   . "红队-审查"))
   "角色映射：identifier -> 描述")
 
 (defun my/agent-shell-all-sessions ()
@@ -540,16 +540,19 @@
              :command "gemini"
              :command-params '("--acp"))))
          (agent-shell-make-agent-config
-          :identifier 'trae
-          :mode-line-name "Trae"
-          :buffer-name "Trae"
-          :shell-prompt "Trae> "
-          :shell-prompt-regexp "Trae> "
+          :identifier 'claude
+          :mode-line-name "Claude"
+          :buffer-name "Claude"
+          :shell-prompt "Claude> "
+          :shell-prompt-regexp "Claude> "
           :client-maker
           (lambda (_buffer)
             (agent-shell--make-acp-client
-             :command "traecli"
-             :command-params '("acp" "serve"))))))
+             :command "claude-agent-acp"
+             :command-params '()
+             :environment-variables
+             (list (format "ANTHROPIC_API_KEY=%s"
+                           (getenv "ANTHROPIC_API_KEY"))))))))
   (setq agent-shell-preferred-agent-config 'qwen))
 
 ;; agent 集群
@@ -572,11 +575,11 @@
 
   ;; 红队协调：当 meta-agent 收到请求时，自动唤起红队 Agent 做评审
   (defun my/agent-redteam-review ()
-    "启动红队评审：Gemini + Trae 对当前方案做评审。"
+    "启动红队评审：Gemini + Claude 对当前方案做评审。"
     (interactive)
     (let ((blue-buf (get-buffer "*agent-shell: Qwen*"))
           (red-bufs (list (get-buffer "*agent-shell: Gemini*")
-                          (get-buffer "*agent-shell: Trae*"))))
+                          (get-buffer "*agent-shell: Claude*"))))
       (if (not blue-buf)
           (message "Blue team buffer not found. Start Qwen first.")
         (with-current-buffer blue-buf
