@@ -103,15 +103,6 @@
 (package! superchat
   :recipe (:host github :repo "yibie/superchat"))
 
-(package! eca
-  :recipe (:host github :repo "editor-code-assistant/eca-emacs" :files ("*.el")))
-
-(package! claude-code-ide
-  :recipe (:host github :repo "manzaltu/claude-code-ide.el"))
-
-(package! ai-code
-  :recipe (:host github :repo "tninja/ai-code-interface.el"))
-
 (package! shell-maker)
 (package! acp)
 (package! agent-shell)

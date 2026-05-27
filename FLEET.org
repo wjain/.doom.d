@@ -1,0 +1,46 @@
+#+TITLE: Agent 舰队 — 红蓝对抗工作流
+#+DATE: 2026-05-28
+
+* 快速启动
+
+| 按键       | 操作                     |
+|------------+--------------------------|
+| ~SPC o m m~ | 选择一个 agent 启动会话 |
+| ~SPC A r~   | 红队评审                 |
+| ~SPC A s~   | 综合修订                 |
+| ~SPC A e~   | 导出终稿为 .org         |
+
+* 代理角色
+
+| 标识符  | 角色         | 职责               |
+|---------+--------------+--------------------|
+| qwen    | 蓝队-主笔    | 起草、修订终稿     |
+| opencode| 蓝队-协作者  | 辅助编写           |
+| codex   | 蓝队-协作者  | 辅助编写           |
+| claude  | 红队-审查    | 评审漏洞、可行性   |
+
+* 工作流程
+
+1. 启动舰队: ~SPC o m m~ × 3 (Qwen / OpenCode / Claude)
+2. 蓝队起草: 在 Qwen 等 buffer 输入提示词
+3. 红队评审: ~SPC A r~ → 提取蓝队输出 → 发给 Claude 批判
+4. 综合修订: ~SPC A s~ → 收集红队意见 → 发给 Qwen 修改
+5. 导出终稿: ~SPC A e~ → 导出为 .org 文件 + Checklist
+
+* 管理命令
+
+| 按键       | 功能                     |
+|------------+--------------------------|
+| ~SPC A W~   | Workspace 面板          |
+| ~SPC A m~   | Agent 管理器            |
+| ~SPC A s~   | Sidebar                 |
+| ~SPC o m b~ | 广播指令到所有 agent    |
+| ~SPC o m f~ | Meta-agent 状态扫描     |
+| ~SPC o m !~ | 一键停止所有 agent      |
+
+* 安装
+
+- 所有 agent 通过 ACP (Agent Client Protocol) 连接
+- Qwen/OpenCode/Codex 无需额外认证（settings.json 已配置 API key）
+- Claude 需要设置 ~ANTHROPIC_API_KEY~ 环境变量
+- Gemini ACP 在 v0.43.0 中存在问题，暂不可用

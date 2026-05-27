@@ -461,15 +461,10 @@
     (when (modulep! :editor evil)
       (evil-define-key '(normal insert) vterm-mode-map (kbd "C-\\") #'toggle-input-method))))
 
-(use-package! eca
-  :config
-  (setq eca-extra-args '("--verbose" "--log-level" "debug")))
-
 (defvar my/fleet-role-alist
   '((qwen     . "蓝队-主笔")
     (opencode . "蓝队-协作者")
     (codex    . "蓝队-协作者")
-    (gemini   . "红队-评审")
     (claude   . "红队-审查"))
   "角色映射：identifier -> 描述")
 
@@ -483,16 +478,25 @@
          (cl-remove-if (lambda (l) (string-match-p "^\\(Qwen>\\|OpenCode>\\|Codex>\\|Gemini>\\|Claude>\\|Propose>\\|Send>\\|Execute>\\|# \\)" l)) lines)
          "\n")))))
 
+(defun my/agent-buffers-by-role (identifiers)
+  "返回所有 identifier 在 IDENTIFIERS 列表中的 agent buffer。"
+  (cl-remove-if-not
+   (lambda (b)
+     (with-current-buffer b
+       (when-let ((cfg (and (derived-mode-p 'agent-shell-mode)
+                            (agent-shell-get-config (current-buffer)))))
+         (member (alist-get :identifier cfg) identifiers))))
+   (buffer-list)))
+
 (defun my/agent-collect-red-outputs ()
   "收集所有红队 Agent buffer 的最后一段输出。"
-  (let ((red-buffers '("*agent-shell: Gemini*" "*agent-shell: Claude*" "*agent-shell: OpenCode*")))
-    (mapcar (lambda (name)
-              (let ((buf (get-buffer name)))
-                (when buf
-                  (with-current-buffer buf
-                    (cons name (buffer-substring-no-properties
-                                (max (point-min) (- (point-max) 2000))
-                                (point-max)))))))
+  (let ((red-buffers (my/agent-buffers-by-role '(claude))))
+    (mapcar (lambda (buf)
+              (with-current-buffer buf
+                (cons (buffer-name buf)
+                      (buffer-substring-no-properties
+                       (max (point-min) (- (point-max) 2000))
+                       (point-max)))))
             red-buffers)))
 
 (defun my/agent-shell-all-sessions ()
@@ -501,18 +505,27 @@
    (lambda (b) (with-current-buffer b (derived-mode-p 'agent-shell-mode)))
    (buffer-list)))
 
+(defun my/agent-send (prompt)
+  "向当前 agent-shell buffer 发送 PROMPT。"
+  (if (shell-maker-busy)
+      (agent-shell--enqueue-request :prompt prompt)
+    (shell-maker-submit :input prompt)))
+
 (defun my/agent-fleet-status ()
   "一键汇总所有 Agent 的当前状态。"
   (interactive)
-  (meta-agent-shell-send
-   "请立即扫描所有活跃的 agent-shell 会话，给出当前的汇总进度报告，并指出是否有任何 Agent 陷入了死循环或阻塞。"))
+  (when-let ((buf (and (boundp 'meta-agent-shell--buffer)
+                       (buffer-live-p meta-agent-shell--buffer)
+                       meta-agent-shell--buffer)))
+    (with-current-buffer buf
+      (my/agent-send "请立即扫描所有活跃的 agent-shell 会话，给出当前的汇总进度报告，并指出是否有任何 Agent 陷入了死循环或阻塞。"))))
 
 (defun my/agent-broadcast (msg)
   "将指令广播给所有 Agent。"
   (interactive "sBroadcast Message: ")
   (dolist (buf (my/agent-shell-all-sessions))
     (with-current-buffer buf
-      (agent-shell-send msg))))
+      (my/agent-send msg))))
 
 (defun my/agent-role (identifier)
   "返回 Agent 的角色描述。"
@@ -534,7 +547,7 @@
           :shell-prompt-regexp "Qwen> "
           :client-maker
           (lambda (buffer)
-            (acp-make-client
+            (agent-shell--make-acp-client
              :command "qwen"
              :command-params '("--acp")
              :context-buffer buffer
@@ -549,7 +562,7 @@
           :shell-prompt-regexp "OpenCode> "
           :client-maker
           (lambda (buffer)
-            (acp-make-client
+            (agent-shell--make-acp-client
              :command "opencode"
              :command-params '("acp")
              :context-buffer buffer)))
@@ -561,10 +574,12 @@
           :shell-prompt-regexp "Codex> "
           :client-maker
           (lambda (buffer)
-            (acp-make-client
+            (agent-shell--make-acp-client
              :command "codex-acp"
              :command-params '()
-             :context-buffer buffer)))
+              :context-buffer buffer)))
+         ;; Gemini CLI ACP mode: known issue in v0.43.0 (no ACP output).
+         ;; Requires GEMINI_API_KEY env var if auth is needed.
          (agent-shell-make-agent-config
           :identifier 'gemini
           :mode-line-name "Gemini"
@@ -573,25 +588,26 @@
           :shell-prompt-regexp "Gemini> "
           :client-maker
           (lambda (buffer)
-            (acp-make-client
+            (agent-shell--make-acp-client
              :command "gemini"
              :command-params '("--acp")
              :context-buffer buffer)))
-         (agent-shell-make-agent-config
-          :identifier 'claude
-          :mode-line-name "Claude"
-          :buffer-name "Claude"
-          :shell-prompt "Claude> "
-          :shell-prompt-regexp "Claude> "
-          :client-maker
-          (lambda (buffer)
-            (acp-make-client
-             :command "claude-agent-acp"
-             :command-params '()
-             :context-buffer buffer
-             :environment-variables
-             (list (format "ANTHROPIC_API_KEY=%s"
-                           (getenv "ANTHROPIC_API_KEY"))))))))
+          (agent-shell-make-agent-config
+           :identifier 'claude
+           :mode-line-name "Claude"
+           :buffer-name "Claude"
+           :shell-prompt "Claude> "
+           :shell-prompt-regexp "Claude> "
+           :client-maker
+           (lambda (buffer)
+             (agent-shell--make-acp-client
+              :command "claude-agent-acp"
+              :command-params '()
+              :context-buffer buffer
+              :environment-variables
+              (list (format "ANTHROPIC_API_KEY=%s"
+                            (getenv "ANTHROPIC_API_KEY"))))))))
+  ;; gemini --acp -- known issue in v0.43.0 (no ACP output), retest with updates.
   (setq acp-logging-enabled t))
 
 ;; agent 集群
@@ -624,34 +640,32 @@
 
   ;; 红队协调
   (defun my/agent-redteam-review ()
-    "从蓝队 buffer 提取内容，内联发送给所有红队 Agent 评审。"
+    "从蓝队 buffer 提取内容，内联发送给红队 Agent 评审。"
     (interactive)
-    (let* ((blue-names '("*agent-shell: Qwen*" "*agent-shell: OpenCode*" "*agent-shell: Codex*"))
-           (red-specs `(("*agent-shell: Gemini*"  . "你扮演红队评审（侧重逻辑漏洞、安全风险）。请严厉批判以下方案：\n\n")
-                        ("*agent-shell: Claude*"   . "你扮演红队评审（侧重执行落地、成本效益）。请无情地找出现实中的不可行之处：\n\n")))
+    (let* ((blue-buffers (my/agent-buffers-by-role '(qwen opencode codex)))
+           (claude-buffers (my/agent-buffers-by-role '(claude)))
+           (prompt "你扮演红队评审（侧重逻辑漏洞、安全风险、执行落地、成本效益）。请严厉批判以下方案：\n\n")
            (draft ""))
       ;; 收集蓝队输出
-      (dolist (bn blue-names)
-        (let ((buf (get-buffer bn)))
-          (when buf
-            (setq draft (concat draft
-                         (format "===== %s =====\n" bn)
-                         (my/agent-buffer-content buf) "\n\n")))))
+      (dolist (buf blue-buffers)
+        (setq draft (concat draft
+                     (format "===== %s =====\n" (buffer-name buf))
+                     (my/agent-buffer-content buf) "\n\n")))
       (if (string-blank-p draft)
-          (message "没有找到蓝队 Agent buffer。请先启动蓝队（Qwen/OpenCode）并生成初稿。")
-        ;; 分发给红队
-        (dolist (spec red-specs)
-          (let ((buf (get-buffer (car spec)))
-                (prompt (cdr spec)))
-            (when buf
-              (with-current-buffer buf
-                (agent-shell-send (concat prompt draft))))))
-        (message "红队评审已启动：Gemini + Claude 正在围攻初稿。"))))
+          (message "没有找到蓝队 Agent buffer。请先启动蓝队（Qwen/OpenCode/Codex）并生成初稿。")
+        (if (not claude-buffers)
+            (message "没有找到红队 Agent buffer (Claude)。请先通过 SPC A a 启动 Claude。")
+          ;; 分发评审到 Claude 并切换到其 buffer
+          (dolist (buf claude-buffers)
+            (with-current-buffer buf
+              (my/agent-send (concat prompt draft))
+              (pop-to-buffer buf)))
+          (message "红队评审已启动：Claude 正在评审初稿。")))))
 
   (defun my/agent-synthesize ()
     "收集所有红队反馈，发给蓝队主笔做综合修订，生成终稿。"
     (interactive)
-    (let* ((blue-buf (get-buffer "*agent-shell: Qwen*"))
+    (let* ((qwen-buffers (my/agent-buffers-by-role '(qwen)))
            (red-outputs (my/agent-collect-red-outputs))
            (synthesis-prompt "# 综合修订指令
 
@@ -662,26 +676,28 @@
 3. 标记出哪些改动是源自信哪个红队的反馈
 
 "))
-      (unless blue-buf
+      (unless qwen-buffers
         (user-error "没有找到蓝队主笔 buffer (Qwen)。请先启动。"))
-      (with-current-buffer blue-buf
-        (dolist (ro red-outputs)
-          (when ro
-            (setq synthesis-prompt (concat synthesis-prompt
-                                   (format "\n--- %s 的反馈 ---\n%s\n"
-                                           (car ro) (cdr ro))))))
-        (agent-shell-send synthesis-prompt))
+      (dolist (ro red-outputs)
+        (when ro
+          (setq synthesis-prompt (concat synthesis-prompt
+                                 (format "\n--- %s 的反馈 ---\n%s\n"
+                                         (car ro) (cdr ro))))))
+      (dolist (buf qwen-buffers)
+        (with-current-buffer buf
+          (my/agent-send synthesis-prompt)))
       (message "综合修订指令已发送给 Qwen。")))
 
   (defun my/agent-export-to-org (filepath)
     "将 Qwen buffer 的最新一段输出导出为 .org 文件，附带评审 Checklist。"
     (interactive "FExport to org file: ")
-    (let* ((qwen-buf (get-buffer "*agent-shell: Qwen*"))
+    (let* ((qwen-buffers (my/agent-buffers-by-role '(qwen)))
+           (qwen-buf (car qwen-buffers))
            (content (when qwen-buf
-                      (with-current-buffer qwen-buf
-                        (buffer-substring-no-properties
-                         (max (point-min) (- (point-max) 4000))
-                         (point-max)))))
+                       (with-current-buffer qwen-buf
+                         (buffer-substring-no-properties
+                          (max (point-min) (- (point-max) 4000))
+                          (point-max)))))
            (org-content (format "#+TITLE: 方案评审终稿
 #+DATE: %s
 #+AUTHOR: 舰队输出
@@ -716,9 +732,18 @@
 
   (map! :leader
         :prefix ("A" . "agent")
-        :desc "Red team review"   "r" #'my/agent-redteam-review
-        :desc "Synthesize"        "s" #'my/agent-synthesize
-        :desc "Export to org"     "e" #'my/agent-export-to-org))
+        :desc "Start agent shell"  "a" #'agent-shell
+        :desc "Red team review"    "r" #'my/agent-redteam-review
+        :desc "Export to org"      "e" #'my/agent-export-to-org
+        :desc "Fleet status"       "f" #'my/agent-fleet-status
+        :desc "Synthesize"         "S" #'my/agent-synthesize
+        :desc "忽略误输入继续"     "i" (lambda () (interactive)
+                                          (let ((buf (or (and (derived-mode-p 'agent-shell-mode) (current-buffer))
+                                                         (car (my/agent-shell-all-sessions)))))
+                                            (if buf
+                                                (with-current-buffer buf
+                                                  (my/agent-send "忽略我上一条输入，继续评审"))
+                                              (message "没有活跃的 agent shell"))))))
 
 (use-package! agent-shell-workspace
   :after agent-shell
