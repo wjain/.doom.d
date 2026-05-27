@@ -468,8 +468,9 @@
 (defvar my/fleet-role-alist
   '((qwen     . "蓝队-主笔")
     (opencode . "蓝队-协作者")
+    (codex    . "蓝队-协作者")
     (gemini   . "红队-评审")
-     (claude   . "红队-审查"))
+    (claude   . "红队-审查"))
   "角色映射：identifier -> 描述")
 
 (defun my/agent-buffer-content (buf)
@@ -479,7 +480,7 @@
       (let* ((str (buffer-substring-no-properties (point-min) (point-max)))
              (lines (split-string str "\n")))
         (string-join
-         (cl-remove-if (lambda (l) (string-match-p "^\\(Qwen>\\|OpenCode>\\|Gemini>\\|Claude>\\|Propose>\\|Send>\\|Execute>\\|# \\)" l)) lines)
+         (cl-remove-if (lambda (l) (string-match-p "^\\(Qwen>\\|OpenCode>\\|Codex>\\|Gemini>\\|Claude>\\|Propose>\\|Send>\\|Execute>\\|# \\)" l)) lines)
          "\n")))))
 
 (defun my/agent-collect-red-outputs ()
@@ -553,6 +554,18 @@
              :command-params '("acp")
              :context-buffer buffer)))
          (agent-shell-make-agent-config
+          :identifier 'codex
+          :mode-line-name "Codex"
+          :buffer-name "Codex"
+          :shell-prompt "Codex> "
+          :shell-prompt-regexp "Codex> "
+          :client-maker
+          (lambda (buffer)
+            (acp-make-client
+             :command "codex-acp"
+             :command-params '()
+             :context-buffer buffer)))
+         (agent-shell-make-agent-config
           :identifier 'gemini
           :mode-line-name "Gemini"
           :buffer-name "Gemini"
@@ -613,7 +626,7 @@
   (defun my/agent-redteam-review ()
     "从蓝队 buffer 提取内容，内联发送给所有红队 Agent 评审。"
     (interactive)
-    (let* ((blue-names '("*agent-shell: Qwen*" "*agent-shell: OpenCode*"))
+    (let* ((blue-names '("*agent-shell: Qwen*" "*agent-shell: OpenCode*" "*agent-shell: Codex*"))
            (red-specs `(("*agent-shell: Gemini*"  . "你扮演红队评审（侧重逻辑漏洞、安全风险）。请严厉批判以下方案：\n\n")
                         ("*agent-shell: Claude*"   . "你扮演红队评审（侧重执行落地、成本效益）。请无情地找出现实中的不可行之处：\n\n")))
            (draft ""))
