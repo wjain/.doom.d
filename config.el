@@ -670,7 +670,7 @@
   (define-key doom-leader-map "om" nil)
   (map! :leader
         (:prefix ("o m" . "meta-agent")
-         :desc "New agent shell" "m" #'agent-shell
+         :desc "New agent shell" "m" #'agent-shell-new-shell
          :desc "Project dispatcher" "d" #'meta-agent-shell-jump-to-dispatcher
          :desc "Start heartbeat" "h" #'meta-agent-shell-heartbeat-start
          :desc "Stop heartbeat" "H" #'meta-agent-shell-heartbeat-stop
