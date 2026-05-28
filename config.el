@@ -709,6 +709,33 @@
                 (pop-to-buffer buf))))
           (message "红队评审已启动。")))))
   
+  (defun my/agent-arbitrate ()
+    "收集红队反馈，发给 claude 仲裁汇总，生成精简行动清单。"
+    (interactive)
+    (let* ((red-outputs (my/agent-collect-red-outputs))
+           (claude-buffers (my/agent-buffers-by-role '(claude)))
+           (arbitration-prompt "# 仲裁指令
+
+请作为技术仲裁者，对以下**红队评审意见**进行汇总和仲裁。如果存在冲突或不一致，请给出最终裁定：
+
+1. **共识点**：列出所有评审一致认可的问题。
+2. **分歧点**：列出存在争议的地方，并给出你的裁定。
+3. **精简行动清单**：按优先级输出 3-5 条最关键的修改项。
+"))
+      (unless red-outputs
+        (user-error "没有找到红队反馈。请先执行红队评审 (SPC A r)。"))
+      (unless claude-buffers
+        (user-error "没有找到仲裁 Agent (Claude)。请先启动。"))
+      (dolist (ro red-outputs)
+        (when ro
+          (setq arbitration-prompt (concat arbitration-prompt
+                                          (format "\n--- 来自 %s 的反馈 ---\n%s\n"
+                                                  (car ro) (cdr ro))))))
+      (dolist (buf claude-buffers)
+        (with-current-buffer buf
+          (my/agent-send arbitration-prompt)
+          (pop-to-buffer buf)))
+      (message "仲裁指令已发送给 Claude。")))
   (defun my/agent-synthesize ()
     "收集所有红队反馈（或仲裁结果），发给蓝队主笔做综合修订。"
     (interactive)
