@@ -654,14 +654,15 @@
   :after agent-shell
   :config
   (defun my/meta-agent-start (&optional arg buffer-name)
-    "通过 `agent-shell-start' 启动，支持 meta-instruction 注入。"
-    (let ((config (or (agent-shell--resolve-preferred-config)
-                      (agent-shell-select-config))))
-      (when (and buffer-name (not (string= buffer-name "")))
-        ;; Correctly update alist instead of using plist-put
-        (setf (alist-get :buffer-name config) buffer-name))
-      (let ((buf (agent-shell-start :config config)))
-        (when buf (pop-to-buffer buf)))))
+    "启动专用 meta-agent 会话（不弹选择，直接跑 qwen + meta-instruction）。"
+    (let* ((qwen-config (cl-find-if (lambda (c) (eq (alist-get :identifier c) 'qwen))
+                                    agent-shell-agent-configs))
+           (config (copy-tree qwen-config)))
+      (when config
+        (when (and buffer-name (not (string= buffer-name "")))
+          (setf (alist-get :buffer-name config) buffer-name))
+        (let ((buf (agent-shell-start :config config)))
+          (when buf (pop-to-buffer buf))))))
   
   (setq meta-agent-shell-heartbeat-file "~/heartbeat.org")
   (setq meta-agent-shell-start-function #'my/meta-agent-start
@@ -670,7 +671,6 @@
   (map! :leader
         (:prefix ("o m" . "meta-agent")
          :desc "Meta-agent session" "m" #'meta-agent-shell-start
-         :desc "New agent shell"    "M" #'agent-shell
          :desc "Project dispatcher" "d" #'meta-agent-shell-jump-to-dispatcher
          :desc "Start heartbeat" "h" #'meta-agent-shell-heartbeat-start
          :desc "Stop heartbeat" "H" #'meta-agent-shell-heartbeat-stop
