@@ -88,41 +88,53 @@
      'utf-16-le  ;; https://rufflewind.com/2014-07-20/pasting-unicode-in-emacs-on-windows
    'utf-8))
 
+;; 强制所有编码为 UTF-8，解决 agent-shell 历史记录及跨平台中文乱码问题
+(set-language-environment "UTF-8")
+(setq-default buffer-file-coding-system 'utf-8
+              process-coding-system-alist '((".*" . utf-8))
+              comint-input-ring-file-coding-system 'utf-8)
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+(set-selection-coding-system 'utf-8)
+(prefer-coding-system 'utf-8)
+(when (display-graphic-p)
+  (setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING)))
+
 (after! org
   (progn
     ;; org-capture-templates
     (setq org-capture-templates
           '(("t" "Todo" entry (file+headline "~/Documents/TODO/gtd.org" "Tasks")
              "* TODO %?\n  %i" :prepend t)
-
+            
             ("j" "Journal" entry (file+datetree "~/Documents/notes/src/notes/journal.org" "Journal")
              "* %?\nEntered on %U\n %i\n %a" :prepend t :empty-lines 1)
-
+            
             ("w" "WorkNote" entry (file+headline "~/Documents/notes/src/notes/worknotes.org" "WorkNotes")
              "* %U %?\n\n  %i" :prepend t :empty-lines 1)
-
+            
             ("l" "LifeNote" entry (file+headline "~/Documents/notes/src/notes/liftnotes.org" "LiftNotes")
              "* %U %?\n\n  %i" :prepend t :empty-lines 1)
-
+            
             ("s" "StudyNote" entry (file+headline "~/Documents/notes/src/notes/studynotes.org" "StudyNotes")
              "* %U %?\n\n  %i" :prepend t :empty-lines 1)
-
+            
             ("p" "Protocol" entry (file+headline "~/Documents/notes/src/notes/webnotes.org" "Inbox")
              "* %^{Title}\nSource: %u, %c\n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?")
-
+            
             ("L" "Protocol Link" entry (file+headline "~/Documents/notes/src/notes/webnotes.org" "Inbox")
              "* %? [[%:link][%:description]] \nCaptured On: %U")))
-
+    
     (setq org-agenda-files (list  "~/Documents/TODO/gtd.org"
                                   "~/Documents/notes/src/notes/liftnotes.org"
                                   "~/Documents/notes/src/notes/journal.org"
                                   "~/Documents/notes/src/notes/worknotes.org"
                                   "~/Documents/notes/src/notes/studynotes.org"))
-
+    
     (setq org-todo-keywords
           '( (sequence "TODO(t)" "STARTED(s)" "|" "DONE(d!/!)")
              (sequence "WAITING(w@/!)" "SOMEDAY(S)" "PROJECT(P@)" "|" "CANCELLED(c@!)"))))
-
+  
   (setq org-roam-capture-ref-templates '( ("l" "web" plain "%i\n%?"
                                            :target (file+head "%<%Y%m%d>-${slug}.org"
                                                               "#+title: ${title}")
@@ -192,7 +204,7 @@
   (set-face-attribute 'rime-code-face       nil :foreground "#1bd672" :background "#f1f1f1") ;;  输入的编码的样式
   (set-face-attribute 'rime-candidate-num-face       nil :foreground "#565656" :background "#f1f1f1") ;; 候选序号样式
   (set-face-attribute 'rime-comment-face       nil :foreground "#565656" :background "#f1f1f1") ;; 编码提示颜色
-
+  
   (setq rime-posframe-properties
         (list :background-color "#333333"
               :foreground-color "#dcdccc"
@@ -207,13 +219,13 @@
     (cond ((file-exists-p "E:\\msys64\\mingw64\\share\\rime-data")
            (setq rime-share-data-dir "E:\\msys64\\mingw64\\share\\rime-data"))  ;; 这个一定要指定对 不然不能把 rime-user-data-dir 配置的输入法成功编译
           ))  ;; 这个一定要指定对 不然不能把 rime-user-data-dir 配置的输入法成功编译
-
+  
   (setq flycheck-check-syntax-automatically '(mode-enabled save))  ;; 配置flycheck 仅在模式使能和保存的时候进行check
   (defun my-set-rime-idle-flag ()
     ;; (message "rime idle")
     (setq my-rime-idle-p t))
   (advice-add #'rime--escape :after #'my-set-rime-idle-flag)
-
+  
   (defun my/org-in-src-block-p()
     (interactive)
     (let* (first-search-result (in-src-block-flag nil) (cur-point (point)))
@@ -236,12 +248,12 @@
                     (setq in-src-block-flag t)
                     ))))))
       in-src-block-flag))
-
+  
   (defun my/rime-predicate-org-in-src-block-p ()
     "Whether point is in an org-mode's code source block."
     (and (derived-mode-p 'org-mode)
          (my/org-in-src-block-p)))
-
+  
   (setq rime-disable-predicates
         '(rime-predicate-evil-mode-p ;; evil 模式的非编辑模式下使用英文
           rime-predicate-after-alphabet-char-p ;; 在英文字符串之后（必须为以字母开头的英文字符串）
@@ -280,7 +292,7 @@
 (use-package! gptel
   :config
   (setq gptel-default-mode 'org-mode)
-
+  
   ;; OpenRouter offers an OpenAI compatible API
   (setq gptel--backend-openrouter
         (gptel-make-openai "OpenRouter"               ;Any name you want
@@ -297,7 +309,7 @@
                     z-ai/glm-4.5-air:free
                     qwen/qwen3-coder:free
                     moonshotai/kimi-k2:free)))
-
+  
   ;; Moonshot
   (setq gptel--backend-moonshot
         (gptel-make-openai "Moonshot"
@@ -307,7 +319,7 @@
           :models '("moonshot-v1-8k"
                     "moonshot-v1-32k"
                     "moonshot-v1-128k")))
-
+  
   ;; ChatGLM
   (defun gptel--backend-chatglm-header ()
     (let ((token (gptel-api-key-from-auth-source)))
@@ -320,7 +332,7 @@
                     "glm-4.6v-flash")
           :stream nil
           :header #'gptel--backend-chatglm-header))
-
+  
   ;; KatCode
   (setq gptel--backend-katcode
         (gptel-make-openai "KatCode"
@@ -330,7 +342,7 @@
           :models '("ep-tk4wbs-1767076969907658453"  ;; KAT-Coder-Pro-V1
                     "ep-xc4wfb-1767076969893416310"  ;; KAT-Coder-Air-V1
                     )))
-
+  
   ;; LongCat
   (setq gptel--backend-longcat
         (gptel-make-openai "LongCat"
@@ -339,7 +351,7 @@
           :key 'gptel-api-key-from-auth-source
           :models '("LongCat-Flash-Chat"
                     "LongCat-Flash-Thinking")))
-
+  
   ;; Ollama
   (setq gptel--backend-ollama-other
         (gptel-make-ollama "Ollama"
@@ -349,7 +361,7 @@
                     "qwen3-coder:30b"
                     "gpt-oss:20b"
                     )))
-
+  
   (setq gptel--backend-ollama-cloud
         (gptel-make-ollama "Ollama"
           :host "cloud.ollama.xyz:11434"
@@ -362,7 +374,7 @@
                     "glm-4.6:cloud"
                     "minimax-m2:cloud"
                     )))
-
+  
   (setq-default gptel-backend gptel--backend-chatglm
                 gptel-model "glm-4.5-flash")
   )
@@ -378,7 +390,7 @@
   (setq superchat-data-directory "~/Documents/notes/superchat/")
   (setq superchat-default-directories '"~/Documents/notes")
   (setq superchat-port 8080)
-
+  
   ;; 定义后端切换函数
   (defun my/gptel-set-openrouter ()
     "切换到 openrouter 后端"
@@ -386,57 +398,66 @@
     (setq-default gptel-backend gptel--backend-openrouter
                   gptel-model "x-ai/grok-4.1-fast")
     (message "Switched to OpenRouter backend"))
-
+  
   (defun my/gptel-set-moonshot ()
     "切换到 moonshot 后端"
     (interactive)
     (setq-default gptel-backend gptel--backend-moonshot
                   gptel-model "moonshot-v1-8k")
     (message "Switched to Moonshot backend"))
-
+  
   (defun my/gptel-set-chatglm ()
     "切换到 ChatGLM 后端"
     (interactive)
     (setq-default gptel-backend gptel--backend-chatglm
                   gptel-model "glm-4.7-flash")
     (message "Switched to ChatGLM backend"))
-
+  
   (defun my/gptel-set-katcode ()
     "切换到 katcode 后端"
     (interactive)
     (setq-default gptel-backend gptel--backend-katcode
                   gptel-model "ep-xc4wfb-1767076969893416310")
     (message "Switched to katcode backend"))
-
+  
   (defun my/gptel-set-longcat ()
     "切换到 longcat 后端"
     (interactive)
     (setq-default gptel-backend gptel--backend-longcat
                   gptel-model "LongCat-Flash-Thinking")
     (message "Switched to longcat backend"))
-
+  
   (defun my/gptel-set-ollama-other ()
     "切换到 Ollama other 后端"
     (interactive)
     (setq-default gptel-backend gptel--backend-ollama-other
                   gptel-model "gpt-oss:20b")
     (message "Switched to Ollama-other backend"))
-
+  
   (defun my/gptel-set-ollama-cloud ()
     "切换到 Ollama cloude 后端"
     (interactive)
     (setq-default gptel-backend gptel--backend-ollama-cloud
                   gptel-model "gpt-oss:20b-cloud")
     (message "Switched to Ollama-cloud backend"))
-
+  
   (defun my/gptel-set-packy-proxy ()
-    "切换到 Ollama cloude 后端"
+    "切换到 Packy Proxy 后端"
     (interactive)
     (setq-default gptel-backend gptel--backend-packy-proxy
                   gptel-model "claude-haiku-4-5-20251001")
     (message "Switched to packy backend"))
-
-
+  
+  (defun my/gptel-set-openai ()
+    "切换到 OpenAI 后端"
+    (interactive)
+    (setq-default gptel-backend (gptel-make-openai "OpenAI"
+                                  :key (lambda () (getenv "OPENAI_API_KEY"))
+                                  :stream t)
+                  gptel-model "gpt-4o")
+    (message "Switched to OpenAI backend"))
+  
+  
   ;; 快捷键绑定
   (map! :leader
         :prefix ("x" . "AI")
@@ -465,18 +486,27 @@
   '((qwen     . "蓝队-主笔")
     (opencode . "蓝队-协作者")
     (codex    . "蓝队-协作者")
+    (gemini   . "蓝队-备选")
     (claude   . "红队-审查"))
   "角色映射：identifier -> 描述")
 
-(defun my/agent-buffer-content (buf)
-  "从 BUF 中提取文本内容，跳过前导 prompt 行。"
-  (when (bufferp buf)
+(defun my/agent-buffer-content (buf &optional last-only)
+  "从 BUF 中提取文本内容。
+如果 LAST-ONLY 为非 nil，则只提取最后一个 prompt 之后的输出。"
+  (when (buffer-live-p buf)
     (with-current-buffer buf
-      (let* ((str (buffer-substring-no-properties (point-min) (point-max)))
-             (lines (split-string str "\n")))
-        (string-join
-         (cl-remove-if (lambda (l) (string-match-p "^\\(Qwen>\\|OpenCode>\\|Codex>\\|Gemini>\\|Claude>\\|Propose>\\|Send>\\|Execute>\\|# \\)" l)) lines)
-         "\n")))))
+      (let* ((prompt-regexp "^\\(Qwen>\\|OpenCode>\\|Codex>\\|Gemini>\\|Claude>\\|Propose>\\|Send>\\|Execute>\\|# \\)")             (content (if last-only
+                                                                                                                                                 (save-excursion
+                                                                                                                                                   (goto-char (point-max))
+                                                                                                                                                   (if (re-search-backward prompt-regexp nil t)
+                                                                                                                                                       (buffer-substring-no-properties (match-end 0) (point-max))
+                                                                                                                                                     (buffer-substring-no-properties (point-min) (point-max))))
+                                                                                                                                               (buffer-substring-no-properties (point-min) (point-max))))
+             (lines (split-string content "\n")))
+        (string-trim
+         (string-join
+          (cl-remove-if (lambda (l) (string-match-p prompt-regexp l)) lines)
+          "\n"))))))
 
 (defun my/agent-buffers-by-role (identifiers)
   "返回所有 identifier 在 IDENTIFIERS 列表中的 agent buffer。"
@@ -490,15 +520,11 @@
 
 (defun my/agent-collect-red-outputs ()
   "收集所有红队 Agent buffer 的最后一段输出。"
-  (let ((red-buffers (my/agent-buffers-by-role '(claude))))
+  (let ((red-buffers (my/agent-buffers-by-role '(claude gemini-red)))) ;; Supports future red roles
     (mapcar (lambda (buf)
-              (with-current-buffer buf
-                (cons (buffer-name buf)
-                      (buffer-substring-no-properties
-                       (max (point-min) (- (point-max) 2000))
-                       (point-max)))))
+              (cons (buffer-name buf)
+                    (my/agent-buffer-content buf t)))
             red-buffers)))
-
 (defun my/agent-shell-all-sessions ()
   "返回所有活跃 agent-shell buffer 列表。"
   (cl-remove-if-not
@@ -514,11 +540,18 @@
 (defun my/agent-fleet-status ()
   "一键汇总所有 Agent 的当前状态。"
   (interactive)
-  (when-let ((buf (and (boundp 'meta-agent-shell--buffer)
-                       (buffer-live-p meta-agent-shell--buffer)
-                       meta-agent-shell--buffer)))
-    (with-current-buffer buf
-      (my/agent-send "请立即扫描所有活跃的 agent-shell 会话，给出当前的汇总进度报告，并指出是否有任何 Agent 陷入了死循环或阻塞。"))))
+  (let ((buf (and (boundp 'meta-agent-shell--buffer)
+                  (buffer-live-p meta-agent-shell--buffer)
+                  meta-agent-shell--buffer)))
+    (if buf
+        (with-current-buffer buf
+          (my/agent-send "请立即扫描所有活跃的 agent-shell 会话，给出当前的汇总进度报告，并指出是否有任何 Agent 陷入了死循环或阻塞。"))
+      (let ((sessions (my/agent-shell-all-sessions)))
+        (if sessions
+            (message "Fleet Status: %d active sessions (%s). Run SPC o m m to start meta-agent for detailed scanning."
+                     (length sessions)
+                     (mapconcat #'buffer-name sessions ", "))
+          (message "No active agent sessions."))))))
 
 (defun my/agent-broadcast (msg)
   "将指令广播给所有 Agent。"
@@ -536,7 +569,7 @@
   :config
   (require 'acp)
   (require 'agent-shell)
-
+  
   (setq agent-shell-agent-configs
         (list
          (agent-shell-make-agent-config
@@ -553,7 +586,8 @@
              :context-buffer buffer
              :environment-variables
              (list (format "SILICONFLOW_API_KEY=%s"
-                           (getenv "SILICONFLOW_API_KEY"))))))
+                           (getenv "SILICONFLOW_API_KEY"))
+                   "TERM=dumb"))))
          (agent-shell-make-agent-config
           :identifier 'opencode
           :mode-line-name "OpenCode"
@@ -577,7 +611,7 @@
             (agent-shell--make-acp-client
              :command "codex-acp"
              :command-params '()
-              :context-buffer buffer)))
+             :context-buffer buffer)))
          ;; Gemini CLI ACP mode: known issue in v0.43.0 (no ACP output).
          ;; Requires GEMINI_API_KEY env var if auth is needed.
          (agent-shell-make-agent-config
@@ -592,23 +626,28 @@
              :command "gemini"
              :command-params '("--acp")
              :context-buffer buffer)))
-          (agent-shell-make-agent-config
-           :identifier 'claude
-           :mode-line-name "Claude"
-           :buffer-name "Claude"
-           :shell-prompt "Claude> "
-           :shell-prompt-regexp "Claude> "
-           :client-maker
-           (lambda (buffer)
-             (agent-shell--make-acp-client
-              :command "claude-agent-acp"
-              :command-params '()
-              :context-buffer buffer
-              :environment-variables
-              (list (format "ANTHROPIC_API_KEY=%s"
-                            (getenv "ANTHROPIC_API_KEY"))))))))
-  ;; gemini --acp -- known issue in v0.43.0 (no ACP output), retest with updates.
-  (setq acp-logging-enabled t))
+         (agent-shell-make-agent-config
+          :identifier 'claude
+          :mode-line-name "Claude"
+          :buffer-name "Claude"
+          :shell-prompt "Claude> "
+          :shell-prompt-regexp "Claude> "
+          :client-maker
+          (lambda (buffer)
+            (agent-shell--make-acp-client
+             :command "claude-agent-acp"
+             :command-params '()
+             :context-buffer buffer
+             :environment-variables
+             (list (format "ANTHROPIC_API_KEY=%s"
+                           (getenv "ANTHROPIC_API_KEY"))))))))
+  ;; Force UTF-8 for all ACP subprocesses (acp.el's make-process lacks :coding)
+  (cl-pushnew '("acp-client" utf-8-unix . utf-8-unix) process-coding-system-alist :test #'equal)
+  (setq acp-logging-enabled t)
+  (add-hook 'agent-shell-mode-hook
+            (lambda ()
+              (set-buffer-file-coding-system 'utf-8)
+              (set-buffer-process-coding-system 'utf-8 'utf-8))))
 
 ;; agent 集群
 (use-package! meta-agent-shell
@@ -619,10 +658,11 @@
     (let ((config (or (agent-shell--resolve-preferred-config)
                       (agent-shell-select-config))))
       (when (and buffer-name (not (string= buffer-name "")))
-        (plist-put config :buffer-name buffer-name))
+        ;; Correctly update alist instead of using plist-put
+        (setf (alist-get :buffer-name config) buffer-name))
       (let ((buf (agent-shell-start :config config)))
         (when buf (pop-to-buffer buf)))))
-
+  
   (setq meta-agent-shell-heartbeat-file "~/heartbeat.org")
   (setq meta-agent-shell-start-function #'my/meta-agent-start
         agent-shell-preferred-agent-config nil)
@@ -630,6 +670,7 @@
   (map! :leader
         (:prefix ("o m" . "meta-agent")
          :desc "Meta-agent session" "m" #'meta-agent-shell-start
+         :desc "New agent shell"    "M" #'agent-shell
          :desc "Project dispatcher" "d" #'meta-agent-shell-jump-to-dispatcher
          :desc "Start heartbeat" "h" #'meta-agent-shell-heartbeat-start
          :desc "Stop heartbeat" "H" #'meta-agent-shell-heartbeat-stop
@@ -637,43 +678,49 @@
          :desc "Fleet status" "f" #'my/agent-fleet-status
          :desc "Broadcast to all" "b" #'my/agent-broadcast
          :desc "STOP ALL AGENTS" "!" #'meta-agent-shell-big-red-button))
-
+  
   ;; 红队协调
   (defun my/agent-redteam-review ()
     "从蓝队 buffer 提取内容，内联发送给红队 Agent 评审。"
     (interactive)
-    (let* ((blue-buffers (my/agent-buffers-by-role '(qwen opencode codex)))
-           (claude-buffers (my/agent-buffers-by-role '(claude)))
-           (prompt "你扮演红队评审（侧重逻辑漏洞、安全风险、执行落地、成本效益）。请严厉批判以下方案：\n\n")
+    (let* ((blue-buffers (my/agent-buffers-by-role '(qwen opencode codex gemini)))
+           (red-targets (my/agent-buffers-by-role '(claude gemini-red)))
            (draft ""))
-      ;; 收集蓝队输出
+      ;; 收集蓝队输出 (仅提取最后一轮，减少干扰)
       (dolist (buf blue-buffers)
         (setq draft (concat draft
-                     (format "===== %s =====\n" (buffer-name buf))
-                     (my/agent-buffer-content buf) "\n\n")))
+                            (format "===== %s =====\n" (buffer-name buf))
+                            (my/agent-buffer-content buf t) "\n\n")))
       (if (string-blank-p draft)
-          (message "没有找到蓝队 Agent buffer。请先启动蓝队（Qwen/OpenCode/Codex）并生成初稿。")
-        (if (not claude-buffers)
-            (message "没有找到红队 Agent buffer (Claude)。请先通过 SPC A a 启动 Claude。")
-          ;; 分发评审到 Claude 并切换到其 buffer
-          (dolist (buf claude-buffers)
+          (message "没有找到蓝队 Agent buffer。请先启动蓝队并生成初稿。")
+        (if (not red-targets)
+            (message "没有找到红队 Agent buffer (Claude/Gemini-Red)。")
+          (dolist (buf red-targets)
             (with-current-buffer buf
-              (my/agent-send (concat prompt draft))
-              (pop-to-buffer buf)))
-          (message "红队评审已启动：Claude 正在评审初稿。")))))
-
+              (let ((prompt (cond ((string-match-p "Claude" (buffer-name buf))
+                                   (format "你扮演%s（侧重：执行落地、成本效益、架构一致性）。请严厉批判以下方案：\n\n"
+                                           (my/agent-role 'claude)))
+                                  ((string-match-p "Gemini" (buffer-name buf))
+                                   (format "你扮演%s（侧重：逻辑漏洞、安全风险、边界Case）。请严厉批判以下方案：\n\n"
+                                           (my/agent-role 'gemini)))
+                                  (t (format "你扮演%s。请严厉批判以下方案：\n\n"
+                                             (my/agent-role 'unknown))))))
+                (my/agent-send (concat prompt draft))
+                (pop-to-buffer buf))))
+          (message "红队评审已启动。")))))
+  
   (defun my/agent-synthesize ()
-    "收集所有红队反馈，发给蓝队主笔做综合修订，生成终稿。"
+    "收集所有红队反馈（或仲裁结果），发给蓝队主笔做综合修订。"
     (interactive)
     (let* ((qwen-buffers (my/agent-buffers-by-role '(qwen)))
            (red-outputs (my/agent-collect-red-outputs))
            (synthesis-prompt "# 综合修订指令
 
-请作为首席编辑，根据以下红队反馈对原始方案进行综合修订：
+请作为首席编辑，参考以下提供的**红队原始反馈**或**仲裁后的精简建议**对方案进行深度修订：
 
-1. 逐条回应红队的批评（接受/拒绝并说明理由）
-2. 输出一份吸收了合理建议的修订版方案
-3. 标记出哪些改动是源自信哪个红队的反馈
+1. **逐条回应**：简要说明采纳了哪些建议，忽略了哪些（及理由）。
+2. **输出终稿**：提供一份逻辑严密、细节完整的修订版方案。
+3. **版本标记**：在文末注明本次修订的主要改动点。
 
 "))
       (unless qwen-buffers
@@ -681,23 +728,23 @@
       (dolist (ro red-outputs)
         (when ro
           (setq synthesis-prompt (concat synthesis-prompt
-                                 (format "\n--- %s 的反馈 ---\n%s\n"
-                                         (car ro) (cdr ro))))))
+                                         (format "\n--- 来自 %s 的反馈 ---\n%s\n"
+                                                 (car ro) (cdr ro))))))
       (dolist (buf qwen-buffers)
         (with-current-buffer buf
           (my/agent-send synthesis-prompt)))
       (message "综合修订指令已发送给 Qwen。")))
-
   (defun my/agent-export-to-org (filepath)
+    
     "将 Qwen buffer 的最新一段输出导出为 .org 文件，附带评审 Checklist。"
     (interactive "FExport to org file: ")
     (let* ((qwen-buffers (my/agent-buffers-by-role '(qwen)))
            (qwen-buf (car qwen-buffers))
            (content (when qwen-buf
-                       (with-current-buffer qwen-buf
-                         (buffer-substring-no-properties
-                          (max (point-min) (- (point-max) 4000))
-                          (point-max)))))
+                      (with-current-buffer qwen-buf
+                        (buffer-substring-no-properties
+                         (max (point-min) (- (point-max) 4000))
+                         (point-max)))))
            (org-content (format "#+TITLE: 方案评审终稿
 #+DATE: %s
 #+AUTHOR: 舰队输出
@@ -729,21 +776,37 @@
       (when (fboundp 'find-file)
         (find-file filepath))
       (message "已导出: %s" filepath)))
-
+  
+  (defun my/agent-redteam-review-region (beg end)
+    "对选定区域的内容进行红队评审。"
+    (interactive "r")
+    (let* ((red-targets (my/agent-buffers-by-role '(claude gemini-red)))
+           (prompt "你扮演红队评审。请严厉批判以下选定方案片段：\n\n")
+           (draft (buffer-substring-no-properties beg end)))
+      (if (not red-targets)
+          (message "没有找到红队 Agent buffer (Claude/Gemini-Red)。")
+        (dolist (buf red-targets)
+          (with-current-buffer buf
+            (my/agent-send (concat prompt draft))
+            (pop-to-buffer buf)))
+        (message "区域评审已启动。"))))
+  
   (map! :leader
         :prefix ("A" . "agent")
-        :desc "Start agent shell"  "a" #'agent-shell
-        :desc "Red team review"    "r" #'my/agent-redteam-review
-        :desc "Export to org"      "e" #'my/agent-export-to-org
-        :desc "Fleet status"       "f" #'my/agent-fleet-status
-        :desc "Synthesize"         "S" #'my/agent-synthesize
-        :desc "忽略误输入继续"     "i" (lambda () (interactive)
-                                          (let ((buf (or (and (derived-mode-p 'agent-shell-mode) (current-buffer))
-                                                         (car (my/agent-shell-all-sessions)))))
-                                            (if buf
-                                                (with-current-buffer buf
-                                                  (my/agent-send "忽略我上一条输入，继续评审"))
-                                              (message "没有活跃的 agent shell"))))))
+        :desc "Start agent shell"    "a" #'agent-shell
+        :desc "Red team review"      "r" #'my/agent-redteam-review
+        :desc "Review region"        "R" #'my/agent-redteam-review-region
+        :desc "Arbitrate feedback"   "s" #'my/agent-arbitrate
+        :desc "Synthesize"           "S" #'my/agent-synthesize
+        :desc "Export to org"        "e" #'my/agent-export-to-org
+        :desc "Fleet status"         "f" #'my/agent-fleet-status
+        :desc "忽略误输入继续"       "i" (lambda () (interactive)
+                                           (let ((buf (or (and (derived-mode-p 'agent-shell-mode) (current-buffer))
+                                                          (car (my/agent-shell-all-sessions)))))
+                                             (if buf
+                                                 (with-current-buffer buf
+                                                   (my/agent-send "忽略我上一条输入，继续评审"))
+                                               (message "没有活跃的 agent shell"))))))
 
 (use-package! agent-shell-workspace
   :after agent-shell
@@ -770,7 +833,7 @@
   (setq agent-shell-sidebar-width "30%"
         agent-shell-sidebar-position 'right)
   (map! :leader
-        :desc "Agent sidebar" "A s" #'agent-shell-sidebar-toggle))
+        :desc "Agent sidebar" "A z" #'agent-shell-sidebar-toggle))
 
 (use-package! agent-shell-web
   :after agent-shell

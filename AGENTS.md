@@ -28,7 +28,7 @@ Important: Use `agent-shell--make-acp-client` (not raw `acp-make-client`) for al
 
 1. Start blue agent: `M-x agent-shell` (or `SPC o m s`), select qwen/opencode/codex
 2. Generate draft in blue agent buffer
-3. Red-team review: `SPC A r` → `SPC A s` → `SPC A e`
+3. Red-team review: `SPC A r` (review) → `SPC A s` (arbitrate) → `SPC A S` (synthesize) → `SPC A e` (export)
 4. Fleet status: `SPC A f` (or `SPC o m d`)
 
 ### Known issues
