@@ -90,13 +90,22 @@
 
 ;; 强制所有编码为 UTF-8，解决 agent-shell 历史记录及跨平台中文乱码问题
 (set-language-environment "UTF-8")
-(setq-default buffer-file-coding-system 'utf-8
-              process-coding-system-alist '((".*" . utf-8))
-              comint-input-ring-file-coding-system 'utf-8)
+(setq-default buffer-file-coding-system 'utf-8)
+(setq-default coding-system-for-read 'utf-8)
+(setq-default coding-system-for-write 'utf-8)
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 (set-selection-coding-system 'utf-8)
 (prefer-coding-system 'utf-8)
+;; 解决 comint 和 agent-shell 历史记录读取时的编码问题
+(setq comint-input-ring-file-coding-system 'utf-8
+      savehist-file-coding-system 'utf-8)
+;; 强制所有进程使用 UTF-8 (decoding . encoding)
+(push '(".*" . (utf-8 . utf-8)) process-coding-system-alist)
+;; 针对特定文件路径强制使用 UTF-8
+(add-to-list 'file-coding-system-alist '("/agent/history\\'" . utf-8))
+(add-to-list 'file-coding-system-alist '("/\\.agent-shell/transcripts/.*\\.md\\'" . utf-8))
+
 (when (display-graphic-p)
   (setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING)))
 
@@ -643,8 +652,6 @@
              :environment-variables
              (list (format "ANTHROPIC_API_KEY=%s"
                            (getenv "ANTHROPIC_API_KEY"))))))))
-  ;; Force UTF-8 for all ACP subprocesses (acp.el's make-process lacks :coding)
-  (cl-pushnew '("acp-client" utf-8-unix . utf-8-unix) process-coding-system-alist :test #'equal)
   (setq acp-logging-enabled t)
   (add-hook 'agent-shell-mode-hook
             (lambda ()
@@ -731,8 +738,8 @@
       (dolist (ro red-outputs)
         (when ro
           (setq arbitration-prompt (concat arbitration-prompt
-                                          (format "\n--- 来自 %s 的反馈 ---\n%s\n"
-                                                  (car ro) (cdr ro))))))
+                                           (format "\n--- 来自 %s 的反馈 ---\n%s\n"
+                                                   (car ro) (cdr ro))))))
       (dolist (buf claude-buffers)
         (with-current-buffer buf
           (my/agent-send arbitration-prompt)
