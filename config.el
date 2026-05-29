@@ -532,10 +532,12 @@
    (buffer-list)))
 
 (defun my/agent-send (prompt)
-  "向当前 agent-shell buffer 发送 PROMPT。"
-  (if (shell-maker-busy)
-      (agent-shell--enqueue-request :prompt prompt)
-    (shell-maker-submit :input prompt)))
+  "向当前 agent-shell buffer 发送 PROMPT（带 10s 超时，防止 hang）。"
+  (let ((inhibit-quit nil))
+    (with-timeout (10 (message "my/agent-send: 超时，输入可能未送达"))
+      (if (shell-maker-busy)
+          (agent-shell--enqueue-request :prompt prompt)
+        (shell-maker-submit :input prompt)))))
 
 (defun my/agent-fleet-status ()
   "一键汇总所有 Agent 的当前状态。"
