@@ -501,16 +501,24 @@
 
 (defun my/agent-buffer-content (buf &optional last-only)
   "从 BUF 中提取文本内容。
-如果 LAST-ONLY 为非 nil，则只提取最后一个 prompt 之后的输出。"
+LAST-ONLY 时提取最近一轮完整对话（倒数第二个 prompt 到当前 prompt 之间）。"
   (when (buffer-live-p buf)
     (with-current-buffer buf
-      (let* ((prompt-regexp "^\\(Qwen>\\|OpenCode>\\|Codex>\\|Gemini>\\|Claude>\\|Propose>\\|Send>\\|Execute>\\|# \\)")             (content (if last-only
-                                                                                                                                                 (save-excursion
-                                                                                                                                                   (goto-char (point-max))
-                                                                                                                                                   (if (re-search-backward prompt-regexp nil t)
-                                                                                                                                                       (buffer-substring-no-properties (match-end 0) (point-max))
-                                                                                                                                                     (buffer-substring-no-properties (point-min) (point-max))))
-                                                                                                                                               (buffer-substring-no-properties (point-min) (point-max))))
+      (let* ((prompt-regexp "^\\(Qwen>\\|OpenCode>\\|Codex>\\|Gemini>\\|Claude>\\|Propose>\\|Send>\\|Execute>\\|# \\)")
+             (content
+              (if last-only
+                  (save-excursion
+                    (goto-char (point-max))
+                    ;; 找最后一个 prompt（当前空输入提示符）
+                    (if (re-search-backward prompt-regexp nil t)
+                        (let ((last-start (match-end 0)))
+                          ;; 再往前找倒数第二个 prompt（上次已发起的对话）
+                          (if (re-search-backward prompt-regexp nil t)
+                              (buffer-substring-no-properties (match-end 0) last-start)
+                            ;; 只有一个 prompt — 从中到末尾
+                            (buffer-substring-no-properties (match-end 0) (point-max))))
+                      (buffer-substring-no-properties (point-min) (point-max))))
+                (buffer-substring-no-properties (point-min) (point-max))))
              (lines (split-string content "\n")))
         (string-trim
          (string-join
