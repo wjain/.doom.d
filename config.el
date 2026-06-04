@@ -661,10 +661,13 @@ LAST-ONLY 时提取最近一轮完整对话（倒数第二个 prompt 到当前 p
              (list (format "ANTHROPIC_API_KEY=%s"
                            (getenv "ANTHROPIC_API_KEY"))))))))
   (setq acp-logging-enabled t)
+  ;; Force UTF-8 for all ACP subprocesses (acp.el's make-process lacks :coding)
+  (cl-pushnew '("acp-client" utf-8-unix . utf-8-unix) process-coding-system-alist :test #'equal)
   (add-hook 'agent-shell-mode-hook
             (lambda ()
-              (set-buffer-file-coding-system 'utf-8)
-              (set-buffer-process-coding-system 'utf-8 'utf-8))))
+              (set-buffer-file-coding-system 'utf-8-unix)
+              (set-buffer-process-coding-system 'utf-8 'utf-8)
+              (setq-local comint-input-ring-file-coding-system 'utf-8-unix))))
 
 ;; agent 集群
 (use-package! meta-agent-shell
