@@ -83,19 +83,21 @@
        "-javaagent:E:/msys64/home/jain.y/.doom.d/plugin/lombok-1.18.22.jar"))
 
 
-(set-selection-coding-system
- (if (eq system-type 'windows-nt)
-     'utf-16-le  ;; https://rufflewind.com/2014-07-20/pasting-unicode-in-emacs-on-windows
-   'utf-8))
+;; Windows + MSYS2/conpty: terminal & keyboard use UTF-8; selection uses UTF-16LE for native clipboard
+(when (eq system-type 'windows-nt)
+  (set-terminal-coding-system 'utf-8)
+  (set-keyboard-coding-system 'utf-8)
+  (set-selection-coding-system 'utf-16-le))
 
 ;; 强制所有编码为 UTF-8，解决 agent-shell 历史记录及跨平台中文乱码问题
 (set-language-environment "UTF-8")
 (setq-default buffer-file-coding-system 'utf-8)
 (setq-default coding-system-for-read 'utf-8)
 (setq-default coding-system-for-write 'utf-8)
-(set-terminal-coding-system 'utf-8)
-(set-keyboard-coding-system 'utf-8)
-(set-selection-coding-system 'utf-8)
+(unless (eq system-type 'windows-nt)
+  (set-terminal-coding-system 'utf-8)
+  (set-keyboard-coding-system 'utf-8)
+  (set-selection-coding-system 'utf-8))
 (prefer-coding-system 'utf-8)
 ;; 解决 comint 和 agent-shell 历史记录读取时的编码问题
 (setq comint-input-ring-file-coding-system 'utf-8
