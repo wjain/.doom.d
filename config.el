@@ -539,7 +539,7 @@ LAST-ONLY 时提取最近一轮完整对话（倒数第二个 prompt 到当前 p
 
 (defun my/agent-collect-red-outputs ()
   "收集所有红队 Agent buffer 的最后一段输出。"
-  (let ((red-buffers (my/agent-buffers-by-role '(claude gemini-red)))) ;; Supports future red roles
+  (let ((red-buffers (my/agent-buffers-by-role '(claude-code gemini-red)))) ;; Supports future red roles
     (mapcar (lambda (buf)
               (cons (buffer-name buf)
                     (my/agent-buffer-content buf t)))
@@ -708,7 +708,7 @@ LAST-ONLY 时提取最近一轮完整对话（倒数第二个 prompt 到当前 p
     "从蓝队 buffer 提取内容，内联发送给红队 Agent 评审。"
     (interactive)
     (let* ((blue-buffers (my/agent-buffers-by-role '(qwen opencode codex gemini)))
-           (red-targets (my/agent-buffers-by-role '(claude gemini-red)))
+           (red-targets (my/agent-buffers-by-role '(claude-code gemini-red)))
            (draft ""))
       ;; 收集蓝队输出 (仅提取最后一轮，减少干扰)
       (dolist (buf blue-buffers)
@@ -737,7 +737,7 @@ LAST-ONLY 时提取最近一轮完整对话（倒数第二个 prompt 到当前 p
     "收集红队反馈，发给 claude 仲裁汇总，生成精简行动清单。"
     (interactive)
     (let* ((red-outputs (my/agent-collect-red-outputs))
-           (claude-buffers (my/agent-buffers-by-role '(claude)))
+           (claude-buffers (my/agent-buffers-by-role '(claude-code)))
            (arbitration-prompt "# 仲裁指令
 
 请作为技术仲裁者，对以下**红队评审意见**进行汇总和仲裁。如果存在冲突或不一致，请给出最终裁定：
@@ -831,7 +831,7 @@ LAST-ONLY 时提取最近一轮完整对话（倒数第二个 prompt 到当前 p
   (defun my/agent-redteam-review-region (beg end)
     "对选定区域的内容进行红队评审。"
     (interactive "r")
-    (let* ((red-targets (my/agent-buffers-by-role '(claude gemini-red)))
+    (let* ((red-targets (my/agent-buffers-by-role '(claude-code gemini-red)))
            (prompt "你扮演红队评审。请严厉批判以下选定方案片段：\n\n")
            (draft (buffer-substring-no-properties beg end)))
       (if (not red-targets)
