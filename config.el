@@ -605,10 +605,12 @@ LAST-ONLY 时提取最近一轮完整对话（倒数第二个 prompt 到当前 p
              :command "qwen"
              :command-params '("--acp")
              :context-buffer buffer
-             :environment-variables
-             (list (format "SILICONFLOW_API_KEY=%s"
-                           (getenv "SILICONFLOW_API_KEY"))
-                   "TERM=dumb"))))
+              :environment-variables
+              (list (format "SILICONFLOW_API_KEY=%s"
+                            (getenv "SILICONFLOW_API_KEY"))
+                    (format "BAILIAN_CODING_PLAN_API_KEY=%s"
+                            (getenv "SILICONFLOW_API_KEY"))
+                    "TERM=dumb"))))
          (agent-shell-make-agent-config
           :identifier 'opencode
           :mode-line-name "OpenCode"
