@@ -787,7 +787,6 @@ LAST-ONLY 时提取最近一轮完整对话（倒数第二个 prompt 到当前 p
       (message "综合修订指令已发送给蓝队。")))
 
   (defun my/agent-export-to-org (filepath)
-  (defun my/agent-export-to-org (filepath)
     
     "将 Qwen buffer 的最新一段输出导出为 .org 文件，附带评审 Checklist。"
     (interactive "FExport to org file: ")
