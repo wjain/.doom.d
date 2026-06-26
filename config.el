@@ -785,7 +785,78 @@ LAST-ONLY 时提取最近一轮完整对话（倒数第二个 prompt 到当前 p
         (with-current-buffer buf
           (my/agent-send synthesis-prompt)))
       (message "综合修订指令已发送给蓝队。")))
-
+  (defun my/agent-wait-for-idle (&optional timeout-sec)
+    "等待所有 agent-shell buffer 活跃请求完成。超时 TIMEOUT-SEC 秒（默认 180）。"
+    (let* ((timeout (or timeout-sec 180))
+           (poll 0.5)
+           (start (float-time)))
+      (while (< (- (float-time) start) timeout)
+        (let ((busy (cl-some (lambda (b)
+                               (with-current-buffer b
+                                 (and (derived-mode-p 'agent-shell-mode)
+                                      (bound-and-true-p agent-shell--state)
+                                      (agent-shell--active-requests-p agent-shell--state))))
+                             (buffer-list))))
+          (unless busy (cl-return-from my/agent-wait-for-idle t))
+          (sleep-for poll)
+          (accept-process-output nil poll)))
+      (message "等待 Agent 超时 (%ds)" timeout)
+      nil))
+  (defun my/agent-auto-review (&optional max-iterations)
+    "自动红蓝对抗循环。
+每轮：红队评审 → 仲裁 → 综合 → 收敛检查。
+收敛后停止，或达到 MAX-ITERATIONS 默认 3。C-g 中断。"
+    (interactive "P")
+    (let ((max-iter (or (and (numberp max-iterations) max-iterations)
+                        (and max-iterations (prefix-numeric-value max-iterations))
+                        3))
+          (iteration 0) (converged nil))
+      (while (and (< iteration max-iter) (not converged))
+        (setq iteration (1+ iteration))
+        (message "Auto review 第 %d/%d 轮..." iteration max-iter)
+        (my/agent-redteam-review) (my/agent-wait-for-idle)
+        (my/agent-arbitrate)      (my/agent-wait-for-idle)
+        (my/agent-synthesize)     (my/agent-wait-for-idle)
+        (condition-case e
+            (if (my/agent-check-convergence)
+                (setq converged t)
+              (message "第 %d 轮未收敛，继续下一轮" iteration))
+          (user-error (message "收敛检查跳过: %s" (cadr e)))))
+      (if converged
+          (message "已达一致！共 %d 轮" iteration)
+        (message "已达最大轮数 %d，未收敛" max-iter))
+      converged))
+  (defun my/agent-check-convergence ()
+    "向红队发送最新修订版并索取 VERDICT: APPROVED / NEEDS_CHANGES。"
+    (let* ((blue-buffers (my/agent-buffers-by-role '(qwen opencode codex)))
+           (red-targets (my/agent-buffers-by-role '(claude-code)))
+           (latest-draft ""))
+      (dolist (buf blue-buffers)
+        (let ((c (my/agent-buffer-content buf t)))
+          (unless (string-blank-p c)
+            (setq latest-draft (concat latest-draft
+                                       (format "===== %s =====\n" (buffer-name buf))
+                                       c "\n\n")))))
+      (when (string-blank-p latest-draft)
+        (user-error "蓝队无内容可检查"))
+      (unless red-targets
+        (user-error "未找到红队 Agent"))
+      (dolist (buf red-targets)
+        (with-current-buffer buf
+          (my/agent-send (concat "这是最新修订版本。确认是否所有问题已解决。\n"
+                                 "全部解决回复: VERDICT: APPROVED\n"
+                                 "还有问题回复: VERDICT: NEEDS_CHANGES\n\n"
+                                 latest-draft))
+          (pop-to-buffer buf)))
+      (my/agent-wait-for-idle)
+      (let ((verdicts ()))
+        (dolist (buf red-targets)
+          (push (string-match-p "VERDICT:[ \t]*APPROVED"
+                                (or (with-current-buffer buf
+                                      (my/agent-buffer-content buf t))
+                                    ""))
+                verdicts))
+        (and verdicts (cl-every #'identity verdicts)))))
   (defun my/agent-export-to-org (filepath)
     
     "将 Qwen buffer 的最新一段输出导出为 .org 文件，附带评审 Checklist。"
@@ -849,6 +920,7 @@ LAST-ONLY 时提取最近一轮完整对话（倒数第二个 prompt 到当前 p
         :desc "Red team review"      "r" #'my/agent-redteam-review
         :desc "Review region"        "R" #'my/agent-redteam-review-region
         :desc "Arbitrate feedback"   "s" #'my/agent-arbitrate
+        :desc "Auto review"          "A" #'my/agent-auto-review
         :desc "Synthesize"           "S" #'my/agent-synthesize
         :desc "Export to org"        "e" #'my/agent-export-to-org
         :desc "Fleet status"         "f" #'my/agent-fleet-status
