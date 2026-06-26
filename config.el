@@ -763,7 +763,7 @@ LAST-ONLY 时提取最近一轮完整对话（倒数第二个 prompt 到当前 p
   (defun my/agent-synthesize ()
     "收集所有红队反馈（或仲裁结果），发给蓝队主笔做综合修订。"
     (interactive)
-    (let* ((qwen-buffers (my/agent-buffers-by-role '(qwen)))
+    (let* ((blue-buffers (my/agent-buffers-by-role '(qwen opencode codex)))
            (red-outputs (my/agent-collect-red-outputs))
            (synthesis-prompt "# 综合修订指令
 
@@ -774,17 +774,19 @@ LAST-ONLY 时提取最近一轮完整对话（倒数第二个 prompt 到当前 p
 3. **版本标记**：在文末注明本次修订的主要改动点。
 
 "))
-      (unless qwen-buffers
-        (user-error "没有找到蓝队主笔 buffer (Qwen)。请先启动。"))
+      (unless blue-buffers
+        (user-error "没有找到蓝队主笔 buffer。请先启动。"))
       (dolist (ro red-outputs)
         (when ro
           (setq synthesis-prompt (concat synthesis-prompt
                                          (format "\n--- 来自 %s 的反馈 ---\n%s\n"
                                                  (car ro) (cdr ro))))))
-      (dolist (buf qwen-buffers)
+      (dolist (buf blue-buffers)
         (with-current-buffer buf
           (my/agent-send synthesis-prompt)))
-      (message "综合修订指令已发送给 Qwen。")))
+      (message "综合修订指令已发送给蓝队。")))
+
+  (defun my/agent-export-to-org (filepath)
   (defun my/agent-export-to-org (filepath)
     
     "将 Qwen buffer 的最新一段输出导出为 .org 文件，附带评审 Checklist。"
