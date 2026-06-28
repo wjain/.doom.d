@@ -633,7 +633,8 @@ LAST-ONLY 时提取最近一轮完整对话（倒数第二个 prompt 到当前 p
           (lambda (buffer)
             (agent-shell--make-acp-client
              :command "codex-acp"
-             :command-params '()
+             :command-params '("-c" "sandbox_mode=workspace-write"
+                               "-c" "approval_policy=never")
              :context-buffer buffer)))
          ;; Gemini CLI ACP mode: known issue in v0.43.0 (no ACP output).
          ;; Requires GEMINI_API_KEY env var if auth is needed.
